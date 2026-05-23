@@ -1,0 +1,53 @@
+{
+
+"retrieval-mcp-yelp-server": {
+
+"cmd": "python new_retrieval_yelp_server.py",
+
+"env": [],
+
+"cwd": "../retrieval-mcp-yelp-server"
+
+},
+
+"nlptool-mcp-yelp-server": {
+
+"cmd": "python server.py",
+
+"env": [],
+
+"cwd": "../nlptool-mcp-yelp"
+
+},
+
+"rating-mcp-yelp-server": {
+
+"cmd": "python server.py",
+
+"env": [],
+
+"cwd": "../rating-mcp-yelp"
+
+},
+
+"rec-mcp-yelp-server": {
+
+"cmd": "python server.py",
+
+"env": [],
+
+"cwd": "../rec-mcp-yelp"
+
+},
+
+"googlemap-mcp-server": {
+
+"cmd": "python server.py",
+
+"env": [],
+
+"cwd": "../googlemap-mcp"
+
+}
+
+}

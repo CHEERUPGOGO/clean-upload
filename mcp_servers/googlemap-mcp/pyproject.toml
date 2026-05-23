@@ -1,0 +1,12 @@
+[project]
+name = "googlemap-mcp"
+version = "0.1.0"
+description = "googlemap MCP Server using googlemap API"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp",
+    "httpx",
+]
+
+[project.scripts]
+googlemap-mcp = "server:mcp.run"

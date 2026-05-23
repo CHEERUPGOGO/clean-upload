@@ -1,0 +1,924 @@
+{
+  "generation_info": {
+    "status": "completed",
+    "source": "task_synthesis"
+  },
+  "server_tasks": [
+    {
+      "server_name": "googlemap-mcp-server+rec-mcp-foursquare-server",
+      "tasks": [
+        {
+          "task_id": 1,
+          "task_description": "For user 624, generate a personalized top-3 venue recommendation list in Manhattan for the next weekend, using the following strictly serial workflow: (1) Retrieve the user's interaction history (including visited businesses and ratings) using get_user_history from rec-mcp-foursquare-server. (2) Analyze the user's most highly rated venue category from their history; use this category as the search query for search_pois on poi-retrieval-mcp-foursquare-server, with location set to Manhattan ([40.7831, -73.9712]), distance set to 2000 meters, and top_k set to 10. (3) From the search_pois results, filter out any venues the user has already visited (using venue_ids from step 1). (4) From the remaining venues, select the top 3 by hit rate score. (5) For each recommended venue, provide a justification: explain how the venue matches the user's historical preferences and why it was selected (e.g., category match, proximity, novelty). The candidate venues to consider are: 4f844c6fe4b0059705cb042c, 4dd6c89a81dcd5bca59af6bc, 4f9458c0e4b020d1a3ed14ce, 4f95b4d4e4b0a20c2806f066. Output must include: the final top-3 venue_ids, their categories, and a justification for each recommendation.",
+          "dependency_analysis": "The chain starts with get_user_history (rec-mcp-foursquare-server), which provides the user's visited venue_ids and ratings. The most highly rated category from this history is extracted and used as the query input for search_pois (poi-retrieval-mcp-foursquare-server), along with a fixed Manhattan location and distance. The output from search_pois includes venue_ids, categories, and hit rate scores. The next step filters out venues already visited by the user (using venue_ids from get_user_history output). The top 3 venues are selected based on hit rate score. Finally, the justification for each recommendation is constructed using the category match (from get_user_history and search_pois outputs), proximity (from search_pois output), and novelty (venues not previously visited). Each step depends strictly on the output of the previous step, forming a serial chain: user history → category extraction → search → filtering → ranking → explanation. No step can be executed in parallel, as each requires data from the prior step.",
+          "selected_tools": [
+            "get_user_history",
+            "search_pois"
+          ],
+          "chain_length": 5,
+          "fuzzy_description": "I'm trying to plan a weekend outing in Manhattan and could use some personalized recommendations for user 624. First, can you pull up their history to see what venues they've visited and how they've rated them? I want to understand what categories they tend to enjoy most.\n\nOnce I know their favorite type of venue, I'd like you to search for similar spots in Manhattan—somewhere around the central area around coordinates [40.7831, -73.9712], within about 2000 meters distance, and bring back around 10 options.\n\nAfter that, we need to filter out any places they've already been to based on their history. Then from what's left, I'd like to see the top 3 ranked by their hit rate score.\n\nFor each of the final recommendations, I'd appreciate an explanation of why it would be a good match for them—things like how it aligns with their past preferences, whether it's in a category they typically rate highly, and what makes it stand out as a new discovery.\n\nOh, and when you're doing this analysis, please specifically consider these venue IDs: 4f844c6fe4b0059705cb042c, 4dd6c89a81dcd5bca59af6bc, 4f9458c0e4b020d1a3ed14ce, and 4f95b4d4e4b0a20c2806f066.",
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is fully solvable. Although the fuzzy description omits explicit parameter values (e.g., 'around 10 options' instead of 'top_k=10', 'about 2000 meters' instead of '2000'), these are easily inferable from context and the provided seed data. The list of candidate venue IDs is explicitly provided in the text, ensuring the final ranking step has necessary inputs. No critical data is missing.",
+            "utility_feedback": "This reflects a highly realistic user scenario. Users rarely provide exact coordinates, radii, or algorithmic parameters; they describe intent ('favorite type', 'similar spots', 'filter out visited'). The requirement to synthesize history, search results, and a specific candidate list into a justified recommendation mirrors real-world personal assistant tasks.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) `get_user_history` must run first to identify the 'most highly rated venue category'. 2) `search_pois` cannot execute until step 1 completes because its `query` parameter depends entirely on the output of step 1. 3) The filtering logic (step 3 in original, implied in fuzzy) requires the `visited_ids` from step 1 and the `search_results` from step 2. 4) The final ranking/selection relies on the filtered list from step 3 and the specific candidate IDs provided. No tool can run in parallel; the data flow is strictly linear: History -> Category -> Search Query -> Search Results -> Filtered List -> Final Recommendation.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "624",
+          "target_item": {
+            "venue_id": "4f844c6fe4b0059705cb042c"
+          },
+          "candidate_item_ids": [
+            "4f844c6fe4b0059705cb042c",
+            "4dd6c89a81dcd5bca59af6bc",
+            "4f9458c0e4b020d1a3ed14ce",
+            "4f95b4d4e4b0a20c2806f066"
+          ]
+        },
+        {
+          "task_id": 2,
+          "task_description": "For user 444, generate a ranked recommendation of the best 'Movie Theater' venue from the candidate set [482af93cf964a520cd4f1fe3, 4bc25702b492d13a3b6da760, 4cdd5c1722bd721e68a10048, 4b08e35ff964a520201323e3, 3fd66200f964a5209fe71ee3] by following this strictly serial workflow: (1) Use the 'filter_pois' tool on the 'poi-retrieval-mcp-foursquare-server' to filter for venues in the 'Movie Theater' category with at least 100 checkins, returning only those matching both criteria. (2) For each venue returned, extract its latitude and longitude coordinates and use the 'google_regeo' tool on the 'googlemap-mcp-server' to obtain the full address for each venue. (3) Based on the addresses, select the venue located closest to 'Times Square, New York, NY' (you must compare the returned addresses to this target location). (4) Output the venue_id, its address, and a justification explaining why it was selected (e.g., 'closest to Times Square and meets checkin threshold').",
+          "dependency_analysis": "The chain starts with 'filter_pois' (poi-retrieval-mcp-foursquare-server), which filters the candidate venues [482af93cf964a520cd4f1fe3, 4bc25702b492d13a3b6da760, 4cdd5c1722bd721e68a10048, 4b08e35ff964a520201323e3, 3fd66200f964a5209fe71ee3] by category ('Movie Theater') and minimum checkins (100). The output is a list of venues with their coordinates. Next, for each venue, the latitude and longitude from the filter_pois output is passed to 'google_regeo' (googlemap-mcp-server) to obtain the address. The addresses are then compared to 'Times Square, New York, NY' to determine proximity (decision point). The venue closest to Times Square is selected, and the final output includes the venue_id, address, and a justification. Each step depends strictly on the output of the previous: filter_pois yields venues and coordinates, which are required for google_regeo; google_regeo yields addresses, which are required for the proximity comparison and final selection.",
+          "selected_tools": [
+            "filter_pois",
+            "google_regeo"
+          ],
+          "chain_length": 3,
+          "fuzzy_description": "I need to find a movie theater for user 444 from this specific list of venues: 482af93cf964a520cd4f1fe3, 4bc25702b492d13a3b6da760, 4cdd5c1722bd721e68a10048, 4b08e35ff964a520201323e3, and 3fd66200f964a5209fe71ee3. First, filter these to only show movie theaters that have at least 100 checkins. Then, for each one that meets that criteria, get their full addresses. Once I have the addresses, I want to know which one is closest to Times Square in New York. Finally, give me the venue ID, its address, and explain why it was selected.",
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is fully solvable. All necessary tools (filter_pois, google_regeo) are available. The seed data (list of venue IDs) is provided. Although the fuzzy description omits the specific tool names and server details, the intent ('filter... then get addresses... then find closest') is clear enough for an agent to infer the correct tool sequence. The logic holds together without missing critical parameters.",
+            "utility_feedback": "This reflects a highly realistic user scenario: a user has a shortlist of options and wants the agent to perform multi-step verification (category/checkins) and spatial reasoning (distance to a landmark) to make a final decision. The ambiguity in the fuzzy version feels natural, mimicking how a human would speak versus a rigid API specification.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. Step 1 (filter_pois) must run first to generate the subset of valid venue IDs. Step 2 (google_regeo) cannot execute until Step 1 completes because it requires the specific lat/lng or venue context of the *filtered* results (and running it on all 5 initially would violate the 'filter first' logic). Step 3 (distance calculation/selection) is impossible without the address output from Step 2. The data flow is linear: Output(Step 1) -> Input(Step 2) -> Output(Step 2) -> Input(Step 3). No tools can run in parallel.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "444",
+          "target_item": {
+            "venue_id": "482af93cf964a520cd4f1fe3"
+          },
+          "candidate_item_ids": [
+            "482af93cf964a520cd4f1fe3",
+            "4bc25702b492d13a3b6da760",
+            "4cdd5c1722bd721e68a10048",
+            "4b08e35ff964a520201323e3",
+            "3fd66200f964a5209fe71ee3"
+          ]
+        },
+        {
+          "task_id": 3,
+          "task_description": "For user 494, generate a personalized top-2 venue recommendation list from the candidate set [4fb2b10ee4b0843d93075ebf, 4a567942f964a5203db51fe3, 4adcafdaf964a520c22e21e3, 4bcb24f50687ef3b420fddcc] by strictly following this serial workflow: (1) Retrieve the user's interaction history using get_user_history(user_id='494') to identify their most frequently visited venue category; (2) Use the most frequent category from the user's history as the 'category' parameter in filter_pois(category=..., min_checkins=10, location=null) to filter the candidate venues, enforcing a minimum of 10 checkins; (3) If the filter_pois output returns fewer than 2 venues, rerun filter_pois with min_checkins=0 to relax the constraint and include more candidates; (4) From the final filtered list, rank the venues by their checkins count (descending), and provide a justification for the top-2 recommendations based on the user's historical preferences and venue popularity. All intermediate outputs must be used as inputs for the next step, and the workflow must be strictly serial with no parallel execution.",
+          "dependency_analysis": "The chain starts with get_user_history (rec-mcp-foursquare-server), whose output (user's visited venues and ratings) is analyzed to determine the user's most frequent venue category. This category is then used as the 'category' input for filter_pois (poi-retrieval-mcp-foursquare-server), along with min_checkins=10, to filter the candidate venues. If the filter_pois output yields fewer than 2 venues, the workflow serially continues by relaxing min_checkins to 0 and rerunning filter_pois, using the same category. The final filtered venues are then ranked by their checkins count, and the top-2 are selected. The justification step uses both the user's history (from get_user_history) and venue popularity (from filter_pois output). Each step depends strictly on the previous output: the category for filter_pois is derived from get_user_history, the candidate list for ranking is from filter_pois, and the justification uses both prior outputs. No step can be executed in parallel, as each requires the previous output to determine its input.",
+          "selected_tools": [
+            "filter_pois",
+            "get_user_history"
+          ],
+          "chain_length": 4,
+          "fuzzy_description": "I need some venue recommendations for user 494. Can you first check what kind of venues they've been visiting most often based on their history? Once I know their preferred category, I'd like to filter down from these specific venues: 4fb2b10ee4b0843d93075ebf, 4a567942f964a5203db51fe3, 4adcafdaf964a520c22e21e3, 4bcb24f50687ef3b420fddcc - looking for ones that match their taste and have at least 10 checkins. If that gives me fewer than 2 options, we might need to relax the checkin requirement a bit. Then, from the filtered results, can you rank them by popularity and give me the top 2 recommendations with explanations for why they'd be a good fit for user 494?",
+          "ambiguity_level": "low",
+          "ambiguity_types": [
+            "PREFERENCE_UNCERTAINTY"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is highly solvable. Although the fuzzy description omits specific parameter names (e.g., 'min_checkins') and exact logic thresholds, the intent is clear enough for an agent to infer the necessary steps: get history -> determine category -> filter with high threshold -> check count -> relax if needed -> rank. All required tools are available.",
+            "utility_feedback": "This reflects a very realistic user scenario where a user provides a goal and constraints in natural language ('relax the requirement a bit') rather than rigid code-like instructions. The need to combine user history with venue filtering and dynamic constraint adjustment makes it genuinely useful.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. Step 2 (filter_pois) explicitly requires the 'category' output from Step 1 (get_user_history). Step 3 (conditional re-run of filter_pois) depends entirely on the count result from Step 2. Step 4 (ranking) requires the specific list of venue IDs returned by Step 2 or 3. No tool can be executed in parallel; the input for each subsequent tool is the direct output of the previous one.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "494",
+          "target_item": {
+            "venue_id": "4fb2b10ee4b0843d93075ebf"
+          },
+          "candidate_item_ids": [
+            "4fb2b10ee4b0843d93075ebf",
+            "4a567942f964a5203db51fe3",
+            "4adcafdaf964a520c22e21e3",
+            "4bcb24f50687ef3b420fddcc"
+          ]
+        },
+        {
+          "task_id": 4,
+          "task_description": "For user 575, generate a personalized top-3 venue recommendation list from the candidate set [500d3cede4b0f6804faa90a8, 4c599df7d3aee21ee4a26855, 4d03ae3437036dcbfba10bfb, 4e164fcae4cd70c587b79d62, 4af5a4d2f964a520bcfa21e3] by strictly following this serial workflow: (1) Retrieve the user's interaction history using get_user_history(user_id='575') to identify their most frequently visited venue category; (2) Use search_pois(query=<most frequent category>, location=[40.748817, -73.985428], distance=1000, top_k=100) to recall venues matching this category within 1km of the specified location (Empire State Building coordinates); (3) Filter the recalled venues using filter_pois(category=<most frequent category>, min_checkins=10, location=[40.748817, -73.985428]) to select only those with at least 10 check-ins; (4) From the filtered venues, select those whose venue_id matches any of the candidate set; (5) Rank these matched venues by their hit rate score (from search_pois output), and output the top 3. For each recommended venue, provide a justification explaining how the user's history, venue category, and check-in popularity contributed to the recommendation. If fewer than 3 venues are matched, output all available and explain the limitation.",
+          "dependency_analysis": "The chain starts with get_user_history, whose output (user's most frequent venue category) is required as the query for search_pois. search_pois returns venues matching the category and location, whose results (venue_ids and hit rate scores) are then passed to filter_pois, using the same category and location, plus a min_checkins threshold. filter_pois outputs venues with sufficient check-ins, which are then cross-referenced with the candidate set to select only those matching the provided venue_ids. The hit rate score from search_pois is used to rank these venues. The final output includes explanations based on the user's history (from get_user_history), venue category (from search_pois/filter_pois), and check-in count (from filter_pois). Each step depends strictly on the previous step's output, and the workflow cannot be executed in parallel.",
+          "selected_tools": [
+            "search_pois",
+            "filter_pois",
+            "get_user_history"
+          ],
+          "chain_length": 3,
+          "fuzzy_description": "I'm trying to plan a visit near the Empire State Building and could use some help finding good spots. First, can you check what types of venues user 575 has been visiting most often based on their history? Once I know what category they're into, I'd like you to search for venues matching that type within about a kilometer of the Empire State Building area. Then, I'd like to filter those down to only the ones that have at least 10 check-ins to make sure they're actually popular. \n\nAfter that, I'd like you to cross-reference those popular venues against this specific list: 500d3cede4b0f6804faa90a8, 4c599df7d3aee21ee4a26855, 4d03ae3437036dcbfba10bfb, 4e164fcae4cd70c587b79d62, 4af5a4d2f964a520bcfa21e3. Finally, can you rank the ones that match and give me the top 3 recommendations? For each one, I'd appreciate an explanation of why it was recommended based on the user's history, the venue type, and how popular it is. If fewer than 3 match up, just give me what you can find and let me know.",
+          "ambiguity_level": "low",
+          "ambiguity_types": [
+            "PREFERENCE_UNCERTAINTY"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is highly solvable. Although the fuzzy description omits explicit coordinates and function parameter names, the context ('Empire State Building', 'about a kilometer') allows the agent to reasonably infer the location parameters required for the tools. The logical flow remains intact despite the natural language phrasing.",
+            "utility_feedback": "The scenario reflects a realistic personalized recommendation workflow where a user wants suggestions based on their history filtered by specific constraints (popularity, candidate list). The ambiguity feels natural, mimicking how a human would verbally request this analysis without knowing the underlying API specifics.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable: 1) `get_user_history` must run first to determine the 'category' variable. 2) `search_pois` cannot run without the 'category' from step 1. 3) `filter_pois` logically depends on the results of the search (or at least the category established in step 1) to apply the check-in filter. 4) The final ranking/filtering against the candidate set requires the output list from the previous steps. No tool can execute meaningfully without the output of its predecessor.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "575",
+          "target_item": {
+            "venue_id": "500d3cede4b0f6804faa90a8"
+          },
+          "candidate_item_ids": [
+            "500d3cede4b0f6804faa90a8",
+            "4c599df7d3aee21ee4a26855",
+            "4d03ae3437036dcbfba10bfb",
+            "4e164fcae4cd70c587b79d62",
+            "4af5a4d2f964a520bcfa21e3"
+          ]
+        },
+        {
+          "task_id": 6,
+          "task_description": "For user 798, generate a ranked recommendation list of the top 2 venues from the candidate set [4dc96c9988774c7090b6bc2c, 4a10adacf964a520f2761fe3, 4b9411fcf964a520cb6534e3, 4f8eba5fe4b0dcea35cfe11d, 4a50f0a7f964a52047b01fe3] that are within walking distance (less than 1500 meters) from the user's most recently visited venue. The workflow is strictly serial: (1) Retrieve user 798's interaction history to identify their most recently visited venue; (2) Get details (including latitude and longitude) of that venue; (3) For each candidate venue, get its details to obtain latitude and longitude; (4) For each candidate, calculate the walking distance from the user's last venue to the candidate using their coordinates; (5) Filter out candidates more than 1500 meters away; (6) Rank the remaining candidates by checkin_counts (descending); (7) For the top 2, use reverse geocoding to obtain their addresses; (8) Provide a final recommendation list with venue_id, venue name, address, checkin_counts, and a justification explaining why each was selected (proximity and popularity).",
+          "dependency_analysis": "The chain starts with get_user_history (rec-mcp-foursquare-server) to find the user's most recent venue_id. This feeds into get_poi_details (poi-retrieval-mcp-foursquare-server) to obtain the coordinates of that venue. For each candidate venue_id, get_poi_details is called to get their coordinates and checkin_counts. These coordinates are then used in google_distance (googlemap-mcp-server) to compute walking distances from the user's last venue to each candidate. Only candidates within 1500 meters are kept. The filtered candidates are ranked by checkin_counts. For the top 2, google_regeo (googlemap-mcp-server) is used to get their addresses. The final output includes venue_id, venue name, address, checkin_counts, and a justification. Each step strictly depends on the output of the previous step: user history yields venue_id, which yields coordinates, which are needed for distance calculation, which determines filtering, which leads to ranking, and finally address enrichment and explanation.",
+          "selected_tools": [
+            "filter_pois",
+            "google_regeo",
+            "google_distance",
+            "get_poi_details",
+            "get_user_history"
+          ],
+          "chain_length": 6,
+          "fuzzy_description": "Hey, I need some help finding venue recommendations for user 798. Could you first check their interaction history to see what venue they've visited most recently? Once you have that, I'd like you to look at these specific venues: 4dc96c9988774c7090b6bc2c, 4a10adacf964a520f2761fe3, 4b9411fcf964a520cb6534e3, 4f8eba5fe4b0dcea35cfe11d, and 4a50f0a7f964a52047b01fe3.\n\nAfter you get the location of their most recent visit, figure out which of those venues are within walking distance—I'd say somewhere around 1500 meters or less, though I'm flexible on that. Then rank the ones that are close enough by how popular they are (check-in counts), and give me the top 2 recommendations. For each one, include the venue name, address, check-in count, and a brief explanation of why it made the cut based on proximity and popularity.",
+          "ambiguity_level": "moderate",
+          "ambiguity_types": [
+            "PREFERENCE_UNCERTAINTY",
+            "IMPLICIT_CONSTRAINTS"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 8,
+            "solvability_feedback": "The task is fully solvable. Despite the 'flexible' distance constraint, the core intent (filter by ~1500m, rank by popularity, return top 2) is clear. All necessary tools are available to retrieve history, details, calculate distances, and reverse geocode. The ambiguity does not prevent execution.",
+            "utility_feedback": "This reflects a highly realistic user scenario: a user wants recommendations based on their current/last location but expresses distance preferences loosely ('around', 'flexible'). The requirement to combine historical data, spatial calculation, and ranking makes it a useful, complex agent task.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) `get_user_history` is required to find the 'last venue'. 2) `get_poi_details` (on last venue) is required to get coordinates for the distance calculation. 3) `get_poi_details` (on candidates) is required to get their coordinates. 4) `google_distance` cannot run without outputs from steps 2 and 3. 5) Filtering and ranking cannot occur without distance outputs. 6) `google_regeo` requires the specific IDs of the final top 2, which are unknown until after ranking. No tool can run independently or in parallel without breaking the logic.",
+            "ambiguity_reasonableness_feedback": "The ambiguity is appropriate for the 'Moderate' level. The phrase 'around 1500 meters or less, though I'm flexible' naturally introduces PREFERENCE_UNCERTAINTY without making the task unsolvable (the agent can default to 1500m as a hard cutoff or apply a soft penalty). It feels like natural human speech rather than artificial noise. The implicit constraint (needing to calculate distance manually rather than using a pre-filtered tool) is also well-handled."
+          },
+          "user_id": "798",
+          "target_item": {
+            "venue_id": "4dc96c9988774c7090b6bc2c"
+          },
+          "candidate_item_ids": [
+            "4dc96c9988774c7090b6bc2c",
+            "4a10adacf964a520f2761fe3",
+            "4b9411fcf964a520cb6534e3",
+            "4f8eba5fe4b0dcea35cfe11d",
+            "4a50f0a7f964a52047b01fe3"
+          ]
+        },
+        {
+          "task_id": 7,
+          "task_description": "For user 477, generate a top-1 venue recommendation from the following candidate venues: 4a998174f964a520b62e20e3 (Gym / Fitness Center), 4b5a0f99f964a520c0aa28e3 (Miscellaneous Shop), 40a2ba80f964a52007f31ee3 (Bar), 4b210713f964a520293624e3 (Bagel Shop), and 4dc2d3e352b1c1fb37f1e945 (Food Truck), using the following strictly serial workflow: \n\n1. Use the Foursquare recommendation tool to recall the top venue for user 477 from the candidate set (by venue_id), prioritizing venues in the 'Gym / Fitness Center' category. \n2. Take the venue_id of the top recommended venue and use the google_regeo tool to obtain its address (by providing its latitude and longitude, which must be extracted from the Foursquare tool's output). \n3. Use the address from step 2 to determine the user's travel distance to this venue: call google_distance with the user's fixed location ('40.7128,-74.0060') as origin and the venue's coordinates as destination, using 'walking' mode. \n4. If the walking distance is greater than 2000 meters, discard this venue and repeat steps 1-3 with the next-best venue from the Foursquare output. \n5. Once a venue within 2000 meters is found, output the venue_id, its address, the walking distance, and a justification explaining why this venue was selected (including both category and proximity constraints). If no venue meets the distance constraint, output 'No suitable venue found'.",
+          "dependency_analysis": "The workflow forms a strictly serial chain across both servers: (1) The Foursquare recommendation tool (rec-mcp-foursquare-server) is used to select the top venue for user 477 from the explicit candidate set, prioritizing the 'Gym / Fitness Center' category. (2) The selected venue's latitude and longitude (from Foursquare output) are passed to google_regeo (googlemap-mcp-server) to obtain its address. (3) The address and coordinates are then used as input to google_distance (googlemap-mcp-server), with the user's location as origin and the venue as destination, in 'walking' mode. (4) The walking distance result is checked: if over 2000 meters, the chain loops back to the next-best venue, repeating the process serially. Only one venue is processed at a time, and each step depends on the previous step's output (venue_id -> lat/lng -> address -> distance). No parallelization is possible, as each candidate must be fully processed and validated in sequence. The final output includes the venue_id, address, walking distance, and a justification based on both category and proximity.",
+          "selected_tools": [
+            "google_regeo",
+            "google_distance"
+          ],
+          "chain_length": 4,
+          "fuzzy_description": "Hey, I need some help finding a good venue for user 477. I've got a few places in mind and want to find the best match. \n\nFirst, could you look at these venues and recommend the top choice for this user: 4a998174f964a520b62e20e3, 4b5a0f99f964a520c0aa28e3, 40a2ba80f964a52007f31ee3, 4b210713f964a520293624e3, and 4dc2d3e352b1c1fb37f1e945. The user prefers places in the Gym / Fitness Center category if possible.\n\nOnce you have the top recommendation, I need to figure out how far it is from their usual location at coordinates 40.7128, -74.0060. Can you get the address for that venue and then calculate the walking distance?\n\nIf the distance turns out to be more than about 2000 meters or so, let's skip that one and try the next best option instead. Keep going through the recommendations until you find something that's reasonably close by.\n\nWhen you do find a venue that meets the distance requirement, let me know the venue ID, its address, how far it is to walk there, and why it was selected. If none of them are within a reasonable walking distance, just let me know.",
+          "ambiguity_level": "low",
+          "ambiguity_types": [
+            "VAGUE_QUANTIFIERS"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is highly solvable. Although the fuzzy description uses vague quantifiers ('about 2000 meters or so', 'reasonably close'), the core intent (filter by distance threshold ~2000m) is clear enough for an agent to infer a specific integer threshold. All necessary tools and seed data (user ID, venue IDs, origin coordinates) are provided.",
+            "utility_feedback": "",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) `rank_items` must run first to order the candidates. 2) `google_regeo` (or details retrieval) depends on the specific `venue_id` selected from step 1's output to get coordinates. 3) `google_distance` explicitly requires the coordinates obtained in step 2 as the destination. 4) The loop logic (step 4 in original) depends entirely on the numerical output of step 3 to decide whether to terminate or restart the sequence with the next item. No tools can run in parallel.",
+            "ambiguity_reasonableness_feedback": "The ambiguity level is appropriate for the 'LOW' classification and 'VAGUE_QUANTIFIERS' type. The conversion of 'about 2000 meters or so' to a strict '2000' threshold is a standard and reasonable inference for an agent. The ambiguity does not obscure the workflow or the required tools; it merely softens the numerical constraint, which adds realism without sacrificing solvability."
+          },
+          "user_id": "477",
+          "target_item": {
+            "venue_id": "4a998174f964a520b62e20e3"
+          },
+          "candidate_item_ids": [
+            "4a998174f964a520b62e20e3",
+            "4b5a0f99f964a520c0aa28e3",
+            "40a2ba80f964a52007f31ee3",
+            "4b210713f964a520293624e3",
+            "4dc2d3e352b1c1fb37f1e945"
+          ]
+        },
+        {
+          "task_id": 8,
+          "task_description": "For user 147, generate a ranked recommendation list of Pizza Places near '1600 Amphitheatre Parkway, Mountain View, CA', using the following candidate venue IDs: 4adcddcef964a520106221e3, 4d541c8ef5daa09307206e74, 4ecbcb4bd3e32939cdc1bc81, 45cf45c4f964a520a0421fe3, 4ba7ecbbf964a52024bf39e3. Follow this strictly serial workflow: (1) Use the google_geo tool on googlemap-mcp-server to obtain the latitude and longitude for '1600 Amphitheatre Parkway, Mountain View, CA'. (2) Use the filter_pois tool on poi-retrieval-mcp-foursquare-server to filter venues by category 'Pizza Place' and location (the latitude and longitude from step 1), returning only Pizza Places near the address. (3) Use the rec_mcp_foursquare_server (rec-mcp-foursquare-server) to rank the filtered Pizza Place venues for user 147, using the venue IDs output from step 2. (4) For the top-ranked venue, provide a justification explaining why it was selected, referencing its proximity (from step 1), category match, and ranking score. The final output must include: (a) the ranked list of Pizza Place venue IDs, (b) the top venue's justification, and (c) all intermediate results (geo coordinates, filtered venues, ranking scores).",
+          "dependency_analysis": "The chain starts with google_geo (googlemap-mcp-server), which takes the address and returns latitude and longitude. These coordinates are required as the 'location' parameter for filter_pois (poi-retrieval-mcp-foursquare-server), which also filters by category 'Pizza Place' and returns only matching venues near the address. The output venue IDs from filter_pois are then passed to rec_mcp_foursquare_server (rec-mcp-foursquare-server) for ranking, using user_id 147. The ranking output is used to select the top venue, and a justification is constructed using the ranking score, proximity (from geo output), and category match. Each step depends strictly on the previous step's output: geo coordinates feed into filtering, filtered venue IDs feed into ranking, and ranking results feed into explanation. No step can be executed in parallel, as each requires the prior output.",
+          "selected_tools": [
+            "google_geo",
+            "filter_pois"
+          ],
+          "chain_length": 4,
+          "fuzzy_description": "Hey, I need some help finding pizza places for user 147. I'm looking for recommendations near 1600 Amphitheatre Parkway in Mountain View, CA.\n\nHere's what I was thinking: first, can you get the coordinates for that address? Once we have the location figured out, I'd like to filter down from these specific venues I have in mind: 4adcddcef964a520106221e3, 4d541c8ef5daa09307206e74, 4ecbcb4bd3e32939cdc1bc81, 45cf45c4f964a520a0421fe3, and 4ba7ecbbf964a52024bf39e3 — I believe they're all pizza places in that area.\n\nAfter that, could you rank these options specifically for user 147 based on their preferences? And then for whichever one comes out on top, I'd like a quick explanation of why it was selected — like how close it is to the address, how well it matches the pizza place category, and what score it got.\n\nSo basically: get the location first, filter to pizza places around there, rank them for user 147, and then justify the top pick. Can you put together all the intermediate results too — the coordinates, the filtered venues, and the ranking scores?",
+          "ambiguity_level": "low",
+          "ambiguity_types": [
+            "VAGUE_QUANTIFIERS"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is highly solvable. Although the fuzzy description omits the explicit list of venue IDs in the initial sentence, it immediately provides them in the second paragraph ('filter down from these specific venues I have in mind: [list]'). The core intent (geo -> filter -> rank -> justify) is clear, and all necessary data points are present within the prompt context for the agent to infer.",
+            "utility_feedback": "",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) `google_geo` must run first to get coordinates. 2) `filter_pois` explicitly requires the coordinates from step 1 as an input parameter to filter the candidate list. 3) `rank_items` requires the specific subset of venue IDs returned by step 2 (the filtered list) to generate a ranking for the user. 4) The justification requires outputs from all previous steps. No tool can run independently or in parallel without breaking the logic.",
+            "ambiguity_reasonableness_feedback": "The ambiguity level is appropriately 'Low'. The task uses 'VAGUE_QUANTIFIERS' and conversational phrasing ('I was thinking', 'basically') to soften the tone without removing critical constraints. The specific venue IDs and the required workflow steps are preserved, just embedded in natural language. It is not over-ambiguous (intent is clear) nor under-ambiguous (it doesn't read like code)."
+          },
+          "user_id": "147",
+          "target_item": {
+            "venue_id": "4adcddcef964a520106221e3"
+          },
+          "candidate_item_ids": [
+            "4adcddcef964a520106221e3",
+            "4d541c8ef5daa09307206e74",
+            "4ecbcb4bd3e32939cdc1bc81",
+            "45cf45c4f964a520a0421fe3",
+            "4ba7ecbbf964a52024bf39e3"
+          ]
+        },
+        {
+          "task_id": 9,
+          "task_description": "For user 895, generate a ranked recommendation list of the top 2 venues from the candidate set [4d4de33cd6f3224bca73a1a6, 4d98324bb7bf2c0f26bbea2d, 4f52a0c6e4b07de37bccc8ae, 4a43bd40f964a520bfa61fe3] based on proximity to the address at latitude/longitude '40.7128,-74.0060' (New York City), minimum checkins, and category relevance. The workflow is strictly serial: (1) Use google_regeo (googlemap-mcp-server) to obtain the address for '40.7128,-74.0060'; (2) Use filter_pois (poi-retrieval-mcp-foursquare-server) to filter the candidate venues by category 'Other Great Outdoors' and minimum checkins of 100, using the location array from the address obtained in step 1; (3) For each venue_id returned from step 2, use get_poi_details (poi-retrieval-mcp-foursquare-server) to retrieve detailed venue information including latitude and longitude; (4) Use google_distance (googlemap-mcp-server) to calculate the walking distance from the original '40.7128,-74.0060' to each venue's coordinates; (5) Rank the venues by shortest walking distance and highest checkin counts, and provide a final explanation for the top 2 recommendations, justifying the selection based on proximity, checkins, and category match. All intermediate outputs must be used as inputs for the next step, and the task must be executed strictly in sequence.",
+          "dependency_analysis": "The chain starts with google_regeo, which converts the seed latlng ('40.7128,-74.0060') to a concrete address and location array. This output is required for filter_pois, which filters the candidate venue_ids by category and minimum checkins, using the location array from step 1. The filtered venue_ids are then passed to get_poi_details to retrieve each venue's latitude, longitude, and checkin counts. These coordinates are then used as destination inputs for google_distance, which calculates walking distance from the original latlng. The final ranking and explanation depend on both the checkin counts and the calculated distances, ensuring all tool outputs are chained serially. No step can be executed in parallel, as each depends on the previous output.",
+          "selected_tools": [
+            "google_regeo",
+            "get_poi_details",
+            "filter_pois",
+            "google_distance",
+            "search_pois"
+          ],
+          "chain_length": 5,
+          "fuzzy_description": "I'm working on a project for user 895 and need some help finding the best outdoor venues near New York City. I have a specific set of venues I'm looking at: 4d4de33cd6f3224bca73a1a6, 4d98324bb7bf2c0f26bbea2d, 4f52a0c6e4b07de37bccc8ae, and 4a43bd40f964a520bfa61fe3.\n\nFirst, could you look up the address details for the location at coordinates 40.7128,-74.0060? Once I have that address information, I'd like to filter those four venues to only include ones that are categorized as \"Other Great Outdoors\" and have at least 100 checkins.\n\nAfter filtering, could you get the detailed information for each remaining venue, including their exact coordinates? Then, I'd like to calculate the walking distance from the original 40.7128,-74.0060 location to each venue.\n\nFinally, can you rank these venues by walking distance and checkin counts, and explain why the top 2 would be the best recommendations based on how close they are, how popular they are, and how well they match the outdoor category?",
+          "ambiguity_level": "low",
+          "ambiguity_types": [
+            "IMPLICIT_CONSTRAINTS"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is fully solvable. All necessary tools are available, and the seed data (coordinates, venue IDs) is provided. The 'low' ambiguity (rephrasing) does not obscure any critical parameters; the agent can clearly infer the required steps and constraints.",
+            "utility_feedback": "The scenario reflects a realistic user workflow: verifying a location context, filtering a specific candidate set by attributes, enriching data with details, calculating specific metrics (distance), and synthesizing a recommendation. The ambiguity feels natural, mimicking how a human would verbally request a multi-step analysis without providing a rigid script.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. Step 1 (google_regeo) provides the location array required for Step 2 (filter_pois). Step 2 returns the filtered list of venue_ids, which are the mandatory inputs for Step 3 (get_poi_details) to retrieve coordinates. Step 3's output (venue coordinates) is the required destination input for Step 4 (google_distance). Finally, Step 5 requires the aggregated outputs of all previous steps to perform the ranking. No tool can execute independently or in parallel without breaking the data flow.",
+            "ambiguity_reasonableness_feedback": "The ambiguity level is appropriate for the 'LOW' classification and 'IMPLICIT_CONSTRAINTS' type. The fuzzy description successfully converts the rigid, step-by-step specification into natural language ('First...', 'Once I have...', 'After filtering...') while preserving all logical constraints and data dependencies. It does not introduce confusion or omit critical parameters, making it a high-quality example of naturalistic task framing."
+          },
+          "user_id": "895",
+          "target_item": {
+            "venue_id": "4d4de33cd6f3224bca73a1a6"
+          },
+          "candidate_item_ids": [
+            "4d4de33cd6f3224bca73a1a6",
+            "4d98324bb7bf2c0f26bbea2d",
+            "4f52a0c6e4b07de37bccc8ae",
+            "4a43bd40f964a520bfa61fe3"
+          ]
+        },
+        {
+          "task_id": 11,
+          "task_description": "For user 823, generate a personalized top-3 recommendation list of venues from the set [4a356654f964a520f19c1fe3, 3fd66200f964a520b8e31ee3, 4b4a466cf964a520e88126e3, 4d62a96f865a224bbb8dc485, 4fbd865ee4b0a3912da1b9bf, 4e2315c5ae6015b212b66a03] as follows: (1) Retrieve the user's interaction history using get_user_history(user_id='823'). (2) Extract the most recently visited venue_id from the user's history and use get_poi_details(venue_id) to obtain its latitude and longitude. (3) Use google_distance to compute the walking distance from this last visited venue to each candidate venue (using their lat/lon from get_poi_details). (4) Filter out any candidate venues more than 1500 meters away from the last visited venue. (5) For the remaining candidates, use search_pois(query='Coffee', location=[lat, lon of last visited venue], distance=1500, top_k=100) to retrieve hit rate scores for venues matching the 'Coffee' category. (6) Rank the filtered candidates by their hit rate score (descending), breaking ties by proximity (shorter distance first). (7) Output the top 3 venue_ids, along with a brief explanation for each, justifying the recommendation based on user history, proximity, and category match.",
+          "dependency_analysis": "The chain is strictly serial: (1) get_user_history provides the user's most recent venue_id; (2) get_poi_details uses this venue_id to get its coordinates; (3) google_distance uses these coordinates as the origin and, after fetching each candidate's coordinates via get_poi_details, computes distances to each candidate; (4) only candidates within 1500 meters are kept; (5) search_pois uses the last visited venue's coordinates and the 'Coffee' query to get hit rate scores for nearby venues; (6) candidates are ranked by hit rate score and distance. Each step depends on the concrete output of the previous: the user's last venue_id is needed for coordinates, which are needed for distance, which is needed for filtering, which is needed for scoring, and so on. No step can be parallelized, as each requires the previous output.",
+          "selected_tools": [
+            "google_geo",
+            "get_user_history",
+            "google_distance",
+            "get_poi_details",
+            "search_pois"
+          ],
+          "chain_length": 6,
+          "fuzzy_description": "Hey, I need some help with recommendations for user 823. I was looking at their recent activity and noticed they've been pretty active lately. Can you check what venues they've visited recently? I think they might have gone to a coffee shop or something similar, but I'm not entirely sure.\n\nOnce you find their most recent visit, I'd like to understand where it's located and how far it is from some specific venues I'm considering. I'm thinking about venues like 4a356654f964a520f19c1fe3, 3fd66200f964a520b8e31ee3, 4b4a466cf964a520e88126e3, 4d62a96f865a224bbb8dc485, 4fbd865ee4b0a3912da1b9bf, and 4e2315c5ae6015b212b66a03.\n\nSome of these might be too far away, so I'd like to filter out anything that's really distant. Maybe around 1500 meters or so? Though I'm not sure if that's the right cutoff - maybe it should be a bit less or more.\n\nAfter filtering, I'd like to see which venues match their preferences. I think they might like coffee shops, but I'm not entirely certain - maybe they prefer something else. Can you rank the remaining options and show me the top 3? I'd like to understand why each one was recommended, considering their history, how close they are, and whether they match what they seem to like.",
+          "ambiguity_level": "high",
+          "ambiguity_types": [
+            "IMPLICIT_CONSTRAINTS",
+            "SOFT_CONTRADICTION",
+            "UNDERSPECIFICATION"
+          ],
+          "quality_scores": {
+            "solvability_score": 8,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 7,
+            "solvability_feedback": "The task is solvable. Although the fuzzy description uses soft language ('maybe around 1500 meters', 'not entirely certain'), the core constraints (user ID, candidate list, approximate distance threshold, category preference) are present. An agent can reasonably infer to use 1500m as the cutoff and 'Coffee' as the query based on the context clues, making the ambiguity resolvable without breaking the task.",
+            "utility_feedback": "This reflects a very realistic user scenario where a user has a hunch about preferences and distance but lacks precise parameters. The need to combine history, geospatial filtering, and category matching creates a genuinely useful recommendation workflow that mimics real-world decision support.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) get_user_history is required to find the last visited venue. 2) get_poi_details requires that specific venue_id to get coordinates. 3) google_distance requires those coordinates to calculate distances to the candidate list. 4) The filtering logic depends entirely on the distance output. 5) search_pois (or the scoring logic derived from it) depends on the filtered list and the location context. No tool can run meaningfully before its predecessor provides the necessary dynamic data.",
+            "ambiguity_reasonableness_feedback": "The ambiguity level is appropriate for 'High'. It successfully converts hard constraints into soft suggestions ('maybe 1500', 'think they might like coffee') which forces the agent to make reasoned assumptions. It feels natural rather than artificial, though it stops short of being unsolvable (which would be a failure). The contradiction between 'not sure' and the implicit need for a definitive answer is handled well by the agent's need to commit to a plan."
+          },
+          "user_id": "823",
+          "target_item": {
+            "venue_id": "4a356654f964a520f19c1fe3"
+          },
+          "candidate_item_ids": [
+            "4a356654f964a520f19c1fe3",
+            "3fd66200f964a520b8e31ee3",
+            "4b4a466cf964a520e88126e3",
+            "4d62a96f865a224bbb8dc485",
+            "4fbd865ee4b0a3912da1b9bf",
+            "4e2315c5ae6015b212b66a03"
+          ]
+        },
+        {
+          "task_id": 12,
+          "task_description": "For user '354', generate a personalized top-2 venue recommendation list from the candidate set [4b40b54ef964a5201bba25e3, 4b6ccd06f964a52061552ce3, 427c0500f964a5209a211fe3, 4c8924647223b1f7097731a8, 40d38200f964a52042011fe3] by strictly following this serial workflow: (1) Retrieve the user's interaction history using get_user_history(user_id='354') to identify the user's most-visited venue category. (2) For each candidate venue, use get_poi_details(venue_id) to obtain its venue_category_name. (3) Filter the candidate venues to only those matching the user's most-visited category. If no candidates match, select all candidates for the next step. (4) For the filtered set, use filter_pois(category=<most-visited-category>, min_checkins=100, location=<venue location from get_poi_details>) for each candidate to check if it has at least 100 check-ins in its category and location. (5) Rank the remaining candidates by their check-in counts (descending), and select the top 2. (6) For each recommended venue, provide a justification explaining how the user's history and venue popularity (check-ins) influenced the recommendation. Output: a JSON object with the top 2 recommended venue_ids and a justification for each.",
+          "dependency_analysis": "The chain is strictly serial: (1) get_user_history provides the user's most-visited category, which is required to (2) get_poi_details for each candidate to map venue_id to category. (3) Filtering candidates by category depends on both previous outputs. (4) For each filtered candidate, filter_pois is called with the category and location from get_poi_details, and min_checkins=100, to ensure popularity. (5) Ranking by check-in counts is only possible after filter_pois returns the check-in data. (6) The final explanation step depends on all prior outputs. Each step's output is required for the next; no steps can be parallelized. Decision point: if no candidates match the user's favorite category, all candidates are considered for popularity filtering.",
+          "selected_tools": [
+            "get_user_history",
+            "get_poi_details",
+            "filter_pois",
+            "search_pois"
+          ],
+          "chain_length": 5,
+          "fuzzy_description": "Hey! I'm trying to help a friend (user 354) find some good venues to check out. They've given me a list of 5 places they're considering: 4b40b54ef964a5201bba25e3, 4b6ccd06f964a52061552ce3, 427c0500f964a5209a211fe3, 4c8924647223b1f7097731a8, and 40d38200f964a52042011fe3.\n\nFirst, could you look at what user 354 has been up to lately? I want to see what kinds of venues they've been visiting most often so I can understand their preferences better.\n\nOnce I know what category they're into, I'd like to go through each of those 5 candidates and see what categories they fall into. Then I can filter down to the ones that match what user 354 seems to prefer.\n\nFor the ones that match, I want to make sure they're actually popular enough - maybe check if they have around 100 check-ins or so in their respective categories and locations. I think we should probably include all candidates if none match the user's preferred category, but let's see what happens.\n\nAfter that, I'd like to rank the filtered options by their popularity and pick the top 2. And it would be really helpful if you could explain why each one was recommended - like how it connects to what user 354 has been doing before and how popular each place is.\n\nCan you put together a JSON with the top 2 recommendations and the reasoning for each?",
+          "ambiguity_level": "moderate",
+          "ambiguity_types": [
+            "IMPLICIT_CONSTRAINTS",
+            "VAGUE_QUANTIFIERS"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 8,
+            "solvability_feedback": "The task is highly solvable. Despite the conversational tone and vague quantifiers ('around 100', 'maybe'), the core logic steps are preserved. The agent can reasonably infer that 'around 100' maps to the `min_checkins=100` parameter and that the conditional logic ('if none match... include all') must be implemented. No critical data is missing.",
+            "utility_feedback": "The scenario reflects a realistic user request where a user provides a list of candidates and asks for a personalized filter/rank based on history. The ambiguity feels natural (e.g., 'I think we should probably include all... but let's see') rather than artificially constructed, making it a good test for agent reasoning.",
+            "sequential_dependency_feedback": "Strict sequential dependency is enforced. Step 1 (get_user_history) is required to determine the category for Step 2/3. Step 2 (get_poi_details) is required to get the location and category of candidates to feed into Step 4 (filter_pois). Specifically, `filter_pois` requires the `location` and `category` derived from the previous steps. The decision to filter or fallback to 'all candidates' also creates a logical branch that prevents parallel execution of the filtering step before the history check.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "354",
+          "target_item": {
+            "venue_id": "4b40b54ef964a5201bba25e3"
+          },
+          "candidate_item_ids": [
+            "4b40b54ef964a5201bba25e3",
+            "4b6ccd06f964a52061552ce3",
+            "427c0500f964a5209a211fe3",
+            "4c8924647223b1f7097731a8",
+            "40d38200f964a52042011fe3"
+          ]
+        },
+        {
+          "task_id": 13,
+          "task_description": "For user 269, generate a personalized top-2 venue recommendation from the candidate set [4dd6cf007d8b322663e064c7, 4cdbcda63f6a8cfa3b42edea, 4f8791f8e4b013a97ed4fe28, 50466a80e4b05ccf2edeb22c] by strictly following this serial workflow: (1) Use get_user_history on rec-mcp-foursquare-server to retrieve the user's interaction history, including visited venues and ratings. (2) Identify the most recently visited venue from the history and extract its venue address. (3) Use google_geo on googlemap-mcp-server to convert this address into latitude and longitude coordinates. (4) Use google_regeo on googlemap-mcp-server to obtain the formatted address from these coordinates. (5) Use the formatted address as a location anchor to filter the candidate venues, selecting only those within the same city or district as the anchor address. (6) Rank the filtered venues based on the user's historical ratings for similar categories (e.g., Office, Gas Station / Garage, Bus Station, General Entertainment), and provide a justification for the top-2 recommendations, referencing both location proximity and category preference. All intermediate outputs must be used as inputs for the next step, and the task must be completed strictly in sequence.",
+          "dependency_analysis": "The chain starts with get_user_history (rec-mcp-foursquare-server), which provides the user's visited venues and ratings. The most recent venue's address is extracted and passed to google_geo (googlemap-mcp-server) to obtain lat/lng. These coordinates are then input to google_regeo (googlemap-mcp-server) to get a formatted address, which is used to filter candidate venues by city/district. Only venues matching the location anchor are considered. The user's historical ratings for similar categories are then used to rank the filtered venues. The justification must reference both the location anchor (from google_regeo) and category preference (from get_user_history). Each step depends strictly on the output of the previous step, and no step can be executed in parallel.",
+          "selected_tools": [
+            "google_regeo",
+            "google_geo",
+            "get_user_history"
+          ],
+          "chain_length": 3,
+          "fuzzy_description": "I need some venue recommendations for user 269. Could you first pull up their interaction history to see what venues they've visited and how they've rated them? Once I have that, I'd like to identify their most recent visit and get the address for that venue. Then, use that address to find nearby options - specifically, I want to filter these candidate venues: 4dd6cf007d8b322663e064c7, 4cdbcda63f6a8cfa3b42edea, 4f8791f8e4b013a97ed4fe28, and 50466a80e4b05ccf2edeb22c - to only those in the same city or district. After that, rank the filtered options based on how they match the user's historical ratings for similar categories like Office, Gas Station / Garage, Bus Station, and General Entertainment, and give me the top 2 recommendations with a clear explanation of why they're the best fit.",
+          "ambiguity_level": "low",
+          "ambiguity_types": [
+            "SOFT_CONTRADICTION"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is highly solvable. Despite the 'fuzzy' phrasing, all critical parameters (user ID, candidate list, specific categories) are preserved. The agent can clearly infer the required steps: retrieve history -> extract address -> geocode -> reverse geocode -> filter -> rank. No critical data is missing.",
+            "utility_feedback": "This reflects a very realistic user scenario where a user provides a goal and a rough workflow but relies on the agent to handle the technical execution details (like coordinate conversion). The combination of location filtering and category-based ranking adds genuine utility.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) get_user_history is needed to find the recent venue. 2) The address from step 1 is the mandatory input for google_geo. 3) The coordinates from step 2 are the mandatory input for google_regeo. 4) The formatted address from step 3 is required to define the 'city/district' scope for filtering the candidates. 5) The filtered list and history are needed for the final ranking. No tool can run independently or in parallel; each step produces the specific input required for the next.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "269",
+          "target_item": {
+            "venue_id": "4dd6cf007d8b322663e064c7"
+          },
+          "candidate_item_ids": [
+            "4dd6cf007d8b322663e064c7",
+            "4cdbcda63f6a8cfa3b42edea",
+            "4f8791f8e4b013a97ed4fe28",
+            "50466a80e4b05ccf2edeb22c"
+          ]
+        },
+        {
+          "task_id": 14,
+          "task_description": "For user 21, generate a ranked recommendation list of venues from the candidate set [4a4025b3f964a5205aa41fe3, 4dda977ad22d38ef4332c419, 4df3d4ea14954f21cf2fc287, 4b6b0d56f964a52075ef2be3] by strictly following this serial workflow: (1) Retrieve the user's interaction history using get_user_history(user_id='21') to obtain previously visited venues and their ratings; (2) For each candidate venue, determine if the user has already visited it and extract the user's last rating for that venue (if any); (3) For venues not previously visited or rated below 3, sequentially calculate the walking distance from the user's most recently visited venue (using its latitude/longitude from the history output) to each candidate venue using google_distance(origin=<last_venue_latlng>, destination=<candidate_latlng>, mode='walking'); (4) Filter out venues where the walking distance exceeds 2000 meters; (5) Rank the remaining venues by proximity (shortest distance first), and provide a justification for each recommendation based on whether it is new to the user and its walkability. The final output must be a ranked list of venue IDs with explanations for each, strictly following the above serial chain.",
+          "dependency_analysis": "The chain starts with get_user_history(user_id='21') on rec-mcp-foursquare-server, which returns the user's visited venues and ratings. The output provides venue IDs and their lat/lng coordinates, which are needed for the next step. For each candidate venue, the agent checks if the user has visited it and their rating. For venues not visited or rated below 3, the agent uses the lat/lng of the user's most recently visited venue (from the history output) as the 'origin' and the candidate venue's lat/lng as 'destination' in google_distance(origin, destination, mode='walking') on googlemap-mcp-server. The output gives the walking distance in meters. Only venues with a distance <= 2000 meters are kept. The agent then ranks these by ascending distance and explains each recommendation based on whether it is new to the user and its walkability. Each step depends strictly on the previous output: candidate filtering depends on history, distance calculation depends on history and candidate venue, and ranking depends on distance results. No step can be executed in parallel, as each requires the prior step's output.",
+          "selected_tools": [
+            "get_user_history",
+            "google_distance"
+          ],
+          "chain_length": 4,
+          "fuzzy_description": "I need to put together some venue recommendations for user 21 from a specific list of candidates. Can you start by pulling up their interaction history to see what venues they've visited before and how they rated them? Once I have that, I need to check which of these four venues they've already been to and grab their last rating if they have one: 4a4025b3f964a5205aa41fe3, 4dda977ad22d38ef4332c419, 4df3d4ea14954f21cf2fc287, and 4b6b0d56f964a52075ef2be3.\n\nFor any venues they haven't visited yet or rated below a 3, I'd like you to calculate the walking distance from wherever they went most recently to each of those candidates. Then filter out anything that's more than about 2000 meters away. Finally, rank what's left by proximity—shortest walk first—and explain for each one whether it's new to them and how walkable it is.",
+          "ambiguity_level": "low",
+          "ambiguity_types": [
+            "SOFT_CONTRADICTION"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is fully solvable. Although the fuzzy description uses soft language ('about 2000 meters'), the core logic and required parameters (user ID, candidate list, threshold logic) are preserved. The agent can reasonably infer the strict cutoff from the context of 'filter out'.",
+            "utility_feedback": "This reflects a highly realistic user scenario: a personalized recommendation engine that filters based on past negative experiences (rating < 3) and current context (proximity to last location). The ambiguity feels natural, mimicking how a human product manager might speak to an analyst.",
+            "sequential_dependency_feedback": "Perfect sequential dependency. Step 1 (get_user_history) is required to identify the 'last visited venue' coordinates. Step 2 (logic check) requires the history output to filter the candidate list. Step 3 (google_distance) cannot execute until Step 2 provides the specific subset of candidates AND Step 1 provides the origin coordinates. No tool can run independently; the chain is unbreakable.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "21",
+          "target_item": {
+            "venue_id": "4a4025b3f964a5205aa41fe3"
+          },
+          "candidate_item_ids": [
+            "4a4025b3f964a5205aa41fe3",
+            "4dda977ad22d38ef4332c419",
+            "4df3d4ea14954f21cf2fc287",
+            "4b6b0d56f964a52075ef2be3"
+          ]
+        },
+        {
+          "task_id": 15,
+          "task_description": "For user 1028, generate a personalized top-1 venue recommendation from the candidate set [4bc7509f0050b7133672b83b, 4f7bc32ae4b0be9cab0a4be5, 4baa2c7af964a52074503ae3, 4f8bad82e4b05ae88ae6dc6a, 4bbf5024b083a5937e2ca3e9] by strictly following this serial workflow: (1) Retrieve the user's interaction history using get_user_history(user_id='1028') to identify the most recently visited venue and its address; (2) Use google_geo(address) to convert this venue's address to latitude and longitude; (3) For each candidate venue, obtain its latitude and longitude using google_geo(address) (you must use the address from user history or a fixed address for each candidate, as available); (4) Calculate the walking distance from the user's most recently visited venue (origin latlng) to each candidate venue (destination latlng) using google_distance(origin, destination, mode='walking'); (5) Select the candidate venue with the shortest walking distance as the top recommendation; (6) Use google_regeo(latlng) on the selected venue's latlng to obtain its full address for explanation. The final output must include: the recommended venue_id, its walking distance from the user's last visited venue, and a justification explaining why it was chosen (proximity and address).",
+          "dependency_analysis": "The chain starts with get_user_history, which provides the user's most recently visited venue and its address. This address is required for google_geo to obtain the latlng of the origin. For each candidate venue, google_geo is used to get their latlngs (destination). The origin and destination latlngs are then passed to google_distance to compute walking distances. The venue with the shortest distance is selected. Finally, google_regeo is called with the selected venue's latlng to retrieve its address for explanation. Each step strictly depends on the output of the previous: user history yields address, which is geocoded; geocoded latlngs are used for distance calculation; the winner's latlng is used for reverse geocoding. No step can be executed in parallel, as each depends on the prior output.",
+          "selected_tools": [
+            "google_geo",
+            "google_regeo",
+            "google_distance",
+            "get_user_history"
+          ],
+          "chain_length": 5,
+          "fuzzy_description": "I need to find a personalized venue recommendation for user 1028. Can you help me figure out where they were most recently? I want to base the recommendation on their last known location.\n\nOnce you have that information, I'd like you to compare these specific venues: 4bc7509f0050b7133672b83b, 4f7bc32ae4b0be9cab0a4be5, 4baa2c7af964a52074503ae3, 4f8bad82e4b05ae88ae6dc6a, and 4bbf5024b083a5937e2ca3e9. I think proximity to where they visited last would be a good factor to consider, though I'm not entirely sure if that's the most important criteria for them.\n\nCan you figure out which of these is closest to their most recent venue, and then give me the walking distance? I'd like to understand why that particular venue was selected, so if you could also get the full address for context, that would be helpful.",
+          "ambiguity_level": "moderate",
+          "ambiguity_types": [
+            "IMPLICIT_CONSTRAINTS",
+            "VAGUE_QUANTIFIERS"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 8,
+            "solvability_feedback": "The task is fully solvable. Although the fuzzy description omits the explicit list of candidate venue IDs in the narrative flow (mentioning them as 'these specific venues' without listing them in the prompt text provided in the 'Fuzzy Description' section, though they are implied to be known or provided in context), the core intent is clear. The agent can infer it needs to retrieve history, geocode, calculate distances, and select the minimum. The missing explicit list in the fuzzy text might be a slight hurdle if not provided elsewhere, but assuming the agent has access to the candidate set mentioned in the original task or can infer it from context, the logic holds. *Correction*: Looking closely at the Fuzzy Description provided, it lists the IDs: '4bc7509f...'. So no data is missing. Solvability is high.",
+            "utility_feedback": "This reflects a very realistic user scenario: a user wants a recommendation based on their current/last location but doesn't know the exact mechanics (coordinates, distance calculation). The ambiguity regarding 'not entirely sure if that's the most important criteria' adds natural human hesitation, making the utility high for testing an agent's ability to prioritize explicit constraints over vague user doubts.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) `get_user_history` is required to get the last venue address. 2) `google_geo` is required on that address to get the origin lat/lng. 3) `google_geo` is required on candidate addresses to get destination lat/lngs. 4) `google_distance` requires the specific origin and destination lat/lngs from steps 2 and 3. 5) The selection logic requires the output of step 4. 6) `google_regeo` requires the lat/lng of the *selected* venue from step 5. No tool can run in parallel; every step (after the first) waits for specific data from the previous step(s).",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "1028",
+          "target_item": {
+            "venue_id": "4bc7509f0050b7133672b83b"
+          },
+          "candidate_item_ids": [
+            "4bc7509f0050b7133672b83b",
+            "4f7bc32ae4b0be9cab0a4be5",
+            "4baa2c7af964a52074503ae3",
+            "4f8bad82e4b05ae88ae6dc6a",
+            "4bbf5024b083a5937e2ca3e9"
+          ]
+        },
+        {
+          "task_id": 17,
+          "task_description": "For user 880, generate a personalized top-3 venue recommendation from the candidate set [4fc3e7dbe4b00baac7993a43, 4ab7badef964a5209d7a20e3, 4ca90147a6e08cfac11a9594, 4e8b4492d22dbf0a91c69cdf, 4c407cb43735be9a5ce216a4, 4f4b01bde4b01739bc884887] by strictly following this serial workflow: (1) Retrieve the user's interaction history using get_user_history(user_id='880') to identify their most frequently visited venue_category_name; (2) For each candidate venue_id, call get_poi_details(venue_id) to obtain its venue_category_name; (3) Filter out any candidate venues whose venue_category_name does NOT match the user's most frequently visited category; (4) From the remaining venues, rank them by checkin_counts (descending); (5) Output the top 3 venue_ids, along with a justification for each recommendation based on category match and popularity. All steps must be executed strictly in sequence, as each step depends on the output of the previous one.",
+          "dependency_analysis": "The chain begins with get_user_history(user_id='880') from rec-mcp-foursquare-server, which returns the user's visited businesses and ratings, including venue_category_name. The most frequent venue_category_name is extracted and used as a filter criterion. Next, for each candidate venue_id, get_poi_details(venue_id) from poi-retrieval-mcp-foursquare-server is called to retrieve venue_category_name and checkin_counts. The output venue_category_name from get_poi_details is compared to the user's favorite category (from step 1); only matching venues are kept. The checkin_counts field from get_poi_details is then used to rank the filtered venues. The final output is a list of top 3 venue_ids, each accompanied by an explanation referencing the category match and popularity. The chain is strictly serial: user history must be analyzed before candidate enrichment, enrichment before filtering, filtering before ranking, and ranking before explanation. No step can be executed in parallel, as each depends on the previous output.",
+          "selected_tools": [
+            "get_poi_details",
+            "get_user_history"
+          ],
+          "chain_length": 2,
+          "fuzzy_description": "Hey, I need some help with venue recommendations for user 880. Can you first check what types of places this user has been visiting most often based on their history? I want to understand their preferences.\n\nAfter that, I'd like you to look at these specific venues: 4fc3e7dbe4b00baac7993a43, 4ab7badef964a5209d7a20e3, 4ca90147a6e08cfac11a9594, 4e8b4492d22dbf0a91c69cdf, 4c407cb43735be9a5ce216a4, and 4f4b01bde4b01739bc884887. I think there are about 6 or so candidates here. \n\nOnce you have that info, match whichever venues fit the user's most visited category, then rank them by how popular they are based on check-in counts. I'd like to see around the top 3 recommendations with explanations for why each one makes sense based on category match and popularity.",
+          "ambiguity_level": "moderate",
+          "ambiguity_types": [
+            "UNDERSPECIFICATION",
+            "VAGUE_QUANTIFIERS"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 8,
+            "solvability_feedback": "The task is fully solvable. Despite the fuzzy phrasing ('about 6 or so', 'around the top 3'), the core intent (find top category, filter candidates, rank by popularity, return top 3) is clearly discernible. The agent can reasonably infer 'around 3' means exactly 3 in a ranking context, and 'about 6' is just conversational filler for the provided list.",
+            "utility_feedback": "This reflects a very realistic user scenario where a user provides a raw list of options and asks for a personalized filter/rank based on their history. The ambiguity feels natural (conversational vagueness) rather than artificial.",
+            "sequential_dependency_feedback": "Perfect sequential dependency exists. Step 1 (get_user_history) is strictly required to determine the 'most frequently visited category'. This output is the mandatory filter criterion for Step 2 (processing the candidate list via get_poi_details). You cannot filter the candidates by category without the result from Step 1. Finally, ranking (Step 3 logic) depends on the filtered list from Step 2. No tools can run in parallel; the data flow is linear and unbreakable.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "880",
+          "target_item": {
+            "venue_id": "4fc3e7dbe4b00baac7993a43"
+          },
+          "candidate_item_ids": [
+            "4fc3e7dbe4b00baac7993a43",
+            "4ab7badef964a5209d7a20e3",
+            "4ca90147a6e08cfac11a9594",
+            "4e8b4492d22dbf0a91c69cdf",
+            "4c407cb43735be9a5ce216a4",
+            "4f4b01bde4b01739bc884887"
+          ]
+        },
+        {
+          "task_id": 18,
+          "task_description": "For user 939, generate a personalized top-3 recommendation list of venues in the 'Coffee Shop' category, using the following strictly serial workflow: (1) Retrieve the user's interaction history using get_user_history(user_id='939') to identify their most frequently visited venue category and preferred location; (2) Use the preferred location and the 'Coffee Shop' category to perform a soft recall of nearby venues with search_pois(query='Coffee Shop', location=[latitude, longitude from most visited venue in history], distance=1000, top_k=100); (3) From the search results, apply a hard filter using filter_pois(category='Coffee Shop', min_checkins=10, location=[latitude, longitude from previous step]) to select venues with at least 10 check-ins; (4) From the filtered venues, select and rank the following candidate venue_ids: 50e87b7ce4b05e343ccc57a9, 4fb93e19e4b04abc0c479bec, 4c5b259bb05c1b8d1705dab1, 4c39d1c60a71c9b6110b43c9, 4fcbab78e4b0b8234c38cbe9, 4e1d81d014955b99c416ef9a, based on hit rate score and check-in count; (5) Provide a final explanation for the top-3 recommendations, justifying each selection based on the user's history, venue proximity, and popularity (check-ins).",
+          "dependency_analysis": "The chain starts with get_user_history, which provides the user's most visited venue category and location. This location is used as the input for search_pois, which recalls venues matching 'Coffee Shop' near that location. The output venues from search_pois are then filtered with filter_pois, using the same location and category, plus a minimum check-in threshold. The filtered list is cross-referenced with the explicit candidate venue_ids (50e87b7ce4b05e343ccc57a9, 4fb93e19e4b04abc0c479bec, 4c5b259bb05c1b8d1705dab1, 4c39d1c60a71c9b6110b43c9, 4fcbab78e4b0b8234c38cbe9, 4e1d81d014955b99c416ef9a), and ranked by hit rate and check-ins. The final step is to explain the top-3 choices, referencing the user's history, venue proximity, and popularity. Each step depends strictly on the output of the previous: user history feeds location to search_pois, search_pois feeds venues to filter_pois, filter_pois feeds candidates to ranking/explanation.",
+          "selected_tools": [
+            "search_pois",
+            "filter_pois",
+            "get_user_history"
+          ],
+          "chain_length": 4,
+          "fuzzy_description": "Hey, I need some help finding coffee shops for user 939. Can you start by looking at their interaction history to see what area they visit most often and what their favorite venue category is? Once I know their preferred location, I'd like you to search for coffee shops within about 1000 meters of that area and pull up around 100 options. Then, from those results, filter down to only the coffee shops that have at least 10 check-ins to make sure they're actually popular spots. After that, I'd like you to rank these specific venues: 50e87b7ce4b05e343ccc57a9, 4fb93e19e4b04abc0c479bec, 4c5b259bb05c1b8d1705dab1, 4c39d1c60a71c9b6110b43c9, 4fcbab78e4b0b8234c38cbe9, and 4e1d81d014955b99c416ef9a, based on how well they match the user's preferences and their popularity. Finally, can you explain why the top 3 recommendations would be good choices for this user, considering their history, how close the venues are, and how popular they are?",
+          "ambiguity_level": "low",
+          "ambiguity_types": [
+            "UNDERSPECIFICATION"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is highly solvable. Although the fuzzy description omits specific parameter names (e.g., 'user_id', 'distance') and uses natural language ('about 1000 meters'), all critical data points (user ID, specific venue IDs, logic flow) are present. The agent can reasonably infer the required tool arguments from the context.",
+            "utility_feedback": "This reflects a very realistic user scenario: a user asking for personalized recommendations based on their history without knowing the technical steps. The ambiguity feels natural (conversational) rather than artificial, as real users rarely specify exact API parameters like 'top_k=100' or 'min_checkins'.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) get_user_history must run first to obtain the location coordinates. 2) search_pois cannot run without the location output from step 1. 3) filter_pois logically depends on the result set from step 2 (and implicitly the location). 4) The ranking step explicitly requires the specific candidate list to be validated against the filtered results from step 3. No tool can execute independently; the data flow is strictly linear.",
+            "ambiguity_reasonableness_feedback": "The 'Low' ambiguity level is appropriate. The description successfully converts rigid technical constraints into natural language ('about 1000 meters', 'pull up around 100 options') without losing the core intent or critical parameters. It is not over-ambiguous (intent is clear) nor under-ambiguous (it doesn't read like code)."
+          },
+          "user_id": "939",
+          "target_item": {
+            "venue_id": "50e87b7ce4b05e343ccc57a9"
+          },
+          "candidate_item_ids": [
+            "50e87b7ce4b05e343ccc57a9",
+            "4fb93e19e4b04abc0c479bec",
+            "4c5b259bb05c1b8d1705dab1",
+            "4c39d1c60a71c9b6110b43c9",
+            "4fcbab78e4b0b8234c38cbe9",
+            "4e1d81d014955b99c416ef9a"
+          ]
+        },
+        {
+          "task_id": 19,
+          "task_description": "For user 131, generate a personalized top-3 venue recommendation list from the candidate set [4c76c2e7947ca1cdb13f4537, 4f18e49be4b00ed3534f78a8, 4ea9665ff790328ae1bc6790, 4d1829fae190721e1b3f2021, 4e77a57b1f6e072f14a37bed, 4b287a76f964a520989324e3] with the following workflow: (1) Retrieve user 131's interaction history using get_user_history(user_id). (2) For each venue in the candidate set, sequentially call get_poi_details(venue_id) to obtain venue details including category, latitude, longitude, and checkin_counts. (3) For each venue, use google_regeo(latlng) with the latitude and longitude from get_poi_details to obtain the venue's address. (4) Filter out venues whose category does not match any category in the user's history and whose checkin_counts are below 100, using filter_pois(category, min_checkins, location) with the category and location (address) obtained from previous steps. (5) Rank the remaining venues by the number of checkins and whether the venue category matches the user's most visited category. (6) For each recommended venue, provide a justification referencing the user's history and the venue's address. The final output must be a ranked list of up to 3 venues, each with venue_id, address, category, checkin_counts, and a brief explanation of why it was recommended.",
+          "dependency_analysis": "The chain starts with get_user_history(user_id) from rec-mcp-foursquare-server, which provides the user's visited categories and ratings. Next, for each candidate venue_id, get_poi_details(venue_id) from poi-retrieval-mcp-foursquare-server is called, using the venue_id as input, to obtain venue details including latitude and longitude. The latitude and longitude from get_poi_details are then passed to google_regeo(latlng) on googlemap-mcp-server to get the venue's address. The address, category, and checkin_counts from previous steps are used as input to filter_pois(category, min_checkins, location) on poi-retrieval-mcp-foursquare-server to filter venues based on category match with user history and minimum checkins. The filtered venues are then ranked by checkin_counts and category match, and for each recommended venue, an explanation is generated using the user's history and venue address. Each step strictly depends on the output of the previous step, forming a serial chain: user history -> venue details -> venue address -> filtering -> ranking/explanation.",
+          "selected_tools": [
+            "google_regeo",
+            "google_geo",
+            "filter_pois",
+            "get_user_history",
+            "get_poi_details"
+          ],
+          "chain_length": 5,
+          "fuzzy_description": "Hey, I need some help with venue recommendations for user 131. I have a specific set of venues I'm considering and I want to find the best matches based on that user's preferences.\n\nSo here's what I'm thinking - first, could you pull up user 131's interaction history? I want to see what kinds of places they've been visiting and what categories they seem to prefer. I think they might like certain types of venues more than others, but I'm not entirely sure.\n\nThen, for these venues: 4c76c2e7947ca1cdb13f4537, 4f18e49be4b00ed3534f78a8, 4ea9665ff790328ae1bc6790, 4d1829fae190721e1b3f2021, 4e77a57b1f6e072f14a37bed, and 4b287a76f964a520989324e3 - I'd like to get the details on each one. Specifically, I need to know their categories, where they're located, and how popular they are based on checkin counts. I think location info would be helpful too, maybe addresses or something like that.\n\nAfter that, I want to narrow things down somehow. I guess venues that match what user 131 has been into before would make sense, and probably ones that have at least some decent popularity - maybe around 100 checkins or so? Or maybe higher? I'm not sure about the exact threshold, but we should probably filter out venues that nobody goes to.\n\nOnce we have the filtered list, I'd like to rank them and pick the top 3. For each one, can you explain why it was recommended, referencing user 131's history and maybe the venue's address so I can actually find it?\n\nI think that covers it - let me know if you need any clarification on the order or anything!",
+          "ambiguity_level": "high",
+          "ambiguity_types": [
+            "UNDERSPECIFICATION",
+            "PREFERENCE_UNCERTAINTY",
+            "IMPLICIT_CONSTRAINTS"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 8,
+            "solvability_feedback": "The task is highly solvable. Although the fuzzy description introduces uncertainty about the exact check-in threshold ('maybe around 100... or maybe higher?'), the core intent is clear. An agent can reasonably infer a default value (e.g., 100) or apply a standard heuristic to resolve this without breaking the workflow. All necessary tools and seed data (venue IDs, user ID) are provided.",
+            "utility_feedback": "This reflects a very realistic user scenario where a user has a specific list of candidates but lacks the technical knowledge to filter them efficiently. The ambiguity regarding 'decent popularity' and 'matching preferences' mimics natural human speech patterns where users express desires rather than strict logical constraints. The result would be genuinely useful for decision support.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable: 1) `get_user_history` must run first to define the filtering criteria (categories). 2) `get_poi_details` must run next to retrieve raw lat/lng and check-in counts for the candidate IDs. 3) `google_regeo` strictly depends on the lat/lng output from step 2; it cannot run without it. 4) `filter_pois` (or the logical filtering step) depends on the category from step 1, the check-ins from step 2, and potentially the location context from step 3. The ranking and justification steps depend on the aggregated output of all previous steps. No tool can execute independently or in parallel without violating the data flow requirements.",
+            "ambiguity_reasonableness_feedback": "The ambiguity level is appropriate for a 'High' rating in a Level-3 task. It successfully converts rigid constraints (exact threshold of 100) into natural uncertainty ('maybe around 100... not sure about the exact threshold'). It uses UNDERSPECIFICATION (vague filtering logic) and PREFERENCE_UNCERTAINTY naturally. It does not obscure the core goal, nor does it feel artificial; it reads like a genuine user request that requires the agent to make reasonable assumptions."
+          },
+          "user_id": "131",
+          "target_item": {
+            "venue_id": "4c76c2e7947ca1cdb13f4537"
+          },
+          "candidate_item_ids": [
+            "4c76c2e7947ca1cdb13f4537",
+            "4f18e49be4b00ed3534f78a8",
+            "4ea9665ff790328ae1bc6790",
+            "4d1829fae190721e1b3f2021",
+            "4e77a57b1f6e072f14a37bed",
+            "4b287a76f964a520989324e3"
+          ]
+        },
+        {
+          "task_id": 20,
+          "task_description": "For user 27, generate a ranked recommendation list of the following venues: '43a48db8f964a5204d2c1fe3', '4bb67e741344b7133f9c9d04', '4bddaa53e75c0f47d219c503', '4c3985851e06d13a11cc793e', '43b28929f964a520a42c1fe3', and '4fff3023e4b04497d9436ca4'. Start by retrieving detailed information for each venue using get_poi_details (from poi-retrieval-mcp-foursquare-server), including their latitude and longitude. For each venue, use google_regeo (from googlemap-mcp-server) to obtain the full address from its coordinates. Next, calculate the walking distance from the target venue ('43a48db8f964a5204d2c1fe3') to each candidate venue using google_distance, with the origin set to the target venue's coordinates and the destination set to each candidate's coordinates. Filter out any venues that are more than 2000 meters away from the target venue. Rank the remaining venues by their checkin_counts (descending). For the top 2 venues, provide a recommendation explanation that includes their address, walking distance from the target venue, and their venue category name. The final output should be a ranked list of up to 2 venues (by venue_id), each with address, walking distance, venue category, and a brief justification for why they are recommended.",
+          "dependency_analysis": "The task requires a strictly serial tool chain across both servers. First, get_poi_details is called for each candidate venue to obtain latitude, longitude, checkin_counts, and venue category. The latitude and longitude from get_poi_details are then passed to google_regeo to get the venue's address. Next, google_distance is used, with the origin set to the target venue's coordinates (from get_poi_details) and the destination set to each candidate's coordinates (also from get_poi_details), to calculate walking distance. Only venues within 2000 meters are kept. The remaining venues are ranked by checkin_counts. For the top 2, the address (from google_regeo), walking distance (from google_distance), and venue category (from get_poi_details) are used to generate a recommendation explanation. Each step depends on the previous: get_poi_details provides coordinates for google_regeo and google_distance; google_distance uses both origin and destination coordinates; filtering and ranking depend on google_distance and checkin_counts; explanations require all prior outputs. No step can be executed in parallel, as each tool's input is derived from the previous tool's output.",
+          "selected_tools": [
+            "google_regeo",
+            "get_poi_details",
+            "google_distance"
+          ],
+          "chain_length": 3,
+          "fuzzy_description": "I need to find some good venue recommendations for user 27. Can you help me compare these specific venues: '43a48db8f964a5204d2c1fe3', '4bb67e741344b7133f9c9d04', '4bddaa53e75c0f47d219c503', '4c3985851e06d13a11cc793e', '43b28929f964a520a42c1fe3', and '4fff3023e4b04497d9436ca4'.\n\nFirst, could you pull up the detailed information for each of these venues, including their exact locations? Once I have that, I'd like to get the full addresses for each one based on their coordinates.\n\nAfter that, I want to figure out how far each venue is from '43a48db8f964a5204d2c1fe3' specifically — like, what's the walking distance from that venue to each of the others? I'd like to filter out any venues that are more than 2000 meters away since those would be too far to walk.\n\nOnce I've got the nearby options, could you rank them by their check-in popularity? I think the most popular ones would be the best recommendations. Then for the top 2, can you give me a brief explanation of why they're recommended, including their address, walking distance from '43a48db8f964a5204d2c1fe3', and what kind of venue they are?",
+          "ambiguity_level": "low",
+          "ambiguity_types": [
+            "PREFERENCE_UNCERTAINTY"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is fully solvable. All necessary tools are available, and all required seed data (venue IDs) is provided. The 'low' ambiguity level correctly preserves all critical parameters (specific IDs, distance threshold, ranking metric), ensuring the agent can discern the exact intent without guessing missing constraints.",
+            "utility_feedback": "",
+            "sequential_dependency_feedback": "The task exhibits a strict, unbreakable sequential chain. 1) `get_poi_details` must run first to retrieve coordinates (lat/lng) for the given IDs. 2) `google_regeo` and `google_distance` strictly depend on the coordinates output from step 1; they cannot run with just the venue IDs. 3) The filtering logic depends on the distance output from step 2. 4) The final ranking and explanation depend on the filtered list and the details retrieved in step 1. No tool can be executed independently or in parallel without breaking the data flow.",
+            "ambiguity_reasonableness_feedback": "The ambiguity level is appropriate for the 'LOW' classification. The fuzzy description successfully converts the rigid imperative instructions into natural, polite conversational language ('Could you pull up...', 'I want to figure out...') without omitting any critical constraints (IDs, 2000m limit, top 2, check-in counts). It avoids artificial confusion while removing the robotic tone, perfectly matching the goal of a Level-3 task."
+          },
+          "user_id": "27",
+          "target_item": {
+            "venue_id": "43a48db8f964a5204d2c1fe3"
+          },
+          "candidate_item_ids": [
+            "43a48db8f964a5204d2c1fe3",
+            "4bb67e741344b7133f9c9d04",
+            "4bddaa53e75c0f47d219c503",
+            "4c3985851e06d13a11cc793e",
+            "43b28929f964a520a42c1fe3",
+            "4fff3023e4b04497d9436ca4"
+          ]
+        },
+        {
+          "task_id": 22,
+          "task_description": "For user 938, generate a ranked recommendation of the top 2 'Park' venues from the candidate set [3fd66200f964a520def11ee3, 4bde045dffdec9281064e7a1, 4c521c3d99ecc9b6a2c05d5a, 4ef90cb4775b54cdb5d970f6, 4d8933fc6daeb60c31b04ae0, 4aef5b89f964a520cbd721e3] that are within 2000 meters of the address '350 5th Ave, New York, NY 10118' (the Empire State Building), have at least 100 check-ins, and are closest to this address. The workflow is strictly serial: (1) Use google_geo to convert the address to latitude/longitude; (2) Use filter_pois to filter the candidate venues by category 'Park', min_checkins 100, and the location from step 1; (3) For each venue returned, use get_poi_details to obtain its latitude and longitude; (4) For each, use google_distance to compute the distance from the address coordinates (from step 1) to the venue coordinates; (5) Rank the venues by ascending distance and output the top 2, including for each: venue_id, venue_category_name, checkin_counts, and distance in meters. Provide a final explanation justifying the ranking based on proximity and check-in count.",
+          "dependency_analysis": "The chain is strictly serial and uses all available servers. Step 1: google_geo (googlemap-mcp-server) converts the address to coordinates, which are required for all subsequent steps. Step 2: filter_pois (poi-retrieval-mcp-foursquare-server) uses the coordinates from step 1, the category 'Park', min_checkins 100, and the candidate venue IDs to filter the set. Step 3: For each venue returned, get_poi_details (poi-retrieval-mcp-foursquare-server) is called to retrieve latitude and longitude (needed for distance calculation). Step 4: For each venue, google_distance (googlemap-mcp-server) is called with the origin as the address coordinates (from step 1) and destination as the venue coordinates (from step 3) to get the distance in meters. Step 5: The venues are ranked by distance, and the top 2 are selected. The final output includes venue_id, venue_category_name, checkin_counts, and distance, with an explanation. Each step depends on the output of the previous: address → coordinates → filtered venues → venue details → distances → ranking.",
+          "selected_tools": [
+            "filter_pois",
+            "google_distance",
+            "search_pois",
+            "get_poi_details",
+            "google_geo"
+          ],
+          "chain_length": 4,
+          "fuzzy_description": "Hey, so I'm user 938 and I'm trying to find some parks near the Empire State Building for a meetup. I have this list of venues I want to check out - let me see, the IDs are 3fd66200f964a520def11ee3, 4bde045dffdec9281064e7a1, 4c521c3d99ecc9b6a2c05d5a, 4ef90cb4775b54cdb5d970f6, 4d8933fc6daeb60c31b04ae0, and 4aef5b89f964a520cbd721e3 - but honestly I'm not sure if I got all of them right, there might be a couple more I was looking at.\n\nFirst, could you figure out where exactly 350 5th Ave, New York, NY 10118 is? I think it's somewhere around there but I'm not 100% sure of the exact coordinates. Once we have that, I'd like to filter through those venues to find parks - I think I want parks specifically, or maybe it was gardens? Something green and outdoorsy anyway.\n\nOh, and I'd like them to be pretty popular, so maybe around 100 check-ins or so? Or was it higher? I remember wanting places that people actually visit, but I'm flexible on the exact number. And they should be within walking distance, maybe something like 2000 meters? Though honestly that might be too far, or maybe not far enough - I'm not really sure what to expect in that area.\n\nAfter we narrow it down, could you check the details on each one and figure out how far they actually are from the address? Then maybe rank them by distance? I think I'd prefer the closest ones, but honestly I'm also curious about the ones with the most check-ins, so maybe we could consider both? \n\nFinally, just give me the top 2 or 3 options with their IDs, categories, check-in counts, and how far away they are. I want to understand why those would be good choices based on how close they are and how popular they seem to be. Does that make sense?",
+          "ambiguity_level": "high",
+          "ambiguity_types": [
+            "SOFT_CONTRADICTION",
+            "UNDERSPECIFICATION",
+            "PREFERENCE_UNCERTAINTY"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is highly solvable. Despite the 'high' ambiguity label, the core constraints (user ID, candidate list, address, general category intent, approximate check-in/distance thresholds) are all present. An agent can reasonably infer default values (e.g., using 100 for check-ins, 2000m for distance, 'Park' for category) to execute the workflow. The ambiguity adds noise but does not block execution.",
+            "utility_feedback": "This reflects a very realistic user scenario where a user has a rough idea of what they want but is unsure of specific parameters (exact coordinates, precise threshold numbers, exact category name). The need to clarify these parameters through tool usage makes the interaction authentic and useful for testing an agent's reasoning capabilities.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) `google_geo` must run first to get coordinates from the address string. 2) `filter_pois` requires those coordinates (and the inferred category/thresholds) to reduce the candidate list. 3) `get_poi_details` must run on the *filtered* list (output of step 2) to get specific venue coordinates, as the input list only had IDs. 4) `google_distance` requires the origin (from step 1) and destination (from step 3) to compute metrics. 5) Ranking logic depends entirely on the output of step 4. No step can be skipped or run in parallel without breaking the data flow.",
+            "ambiguity_reasonableness_feedback": "The ambiguity is appropriate for the 'High' level and types selected. It successfully introduces SOFT_CONTRADICTION (parks vs gardens), UNDERSPECIFICATION (exact check-in count, exact distance limit), and PREFERENCE_UNCERTAINTY (ranking by distance vs popularity). Crucially, it feels natural ('I think', 'maybe', 'honestly I'm not sure') rather than artificially broken. The agent is forced to make reasonable assumptions, which is the goal of a Level-3 task."
+          },
+          "user_id": "938",
+          "target_item": {
+            "venue_id": "3fd66200f964a520def11ee3"
+          },
+          "candidate_item_ids": [
+            "3fd66200f964a520def11ee3",
+            "4bde045dffdec9281064e7a1",
+            "4c521c3d99ecc9b6a2c05d5a",
+            "4ef90cb4775b54cdb5d970f6",
+            "4d8933fc6daeb60c31b04ae0",
+            "4aef5b89f964a520cbd721e3"
+          ]
+        },
+        {
+          "task_id": 23,
+          "task_description": "For user 721, generate a ranked recommendation list of venues from the candidate set [4b61f328f964a520082d2ae3, 4e5d33f4c65bbeeeb42ae25c, 40ede000f964a5203c0a1fe3] based on the following workflow: (1) Retrieve the user's interaction history using get_user_history to identify their most recently visited venue and its address; (2) Use google_geo to convert this address into latitude and longitude coordinates; (3) For each candidate venue, use google_distance to calculate the driving distance from the user's last visited location to the candidate venue's coordinates; (4) Use search_pois to enrich each candidate venue with its category name and hit rate score, using the venue's coordinates and category as query parameters; (5) Filter out any venues that are more than 5,000 meters away from the user's last visited location; (6) Rank the remaining venues by hit rate score (from search_pois) and provide a final explanation for the top recommendation, including the venue's category, distance from the user's last visited location, and why it matches the user's preferences based on their history. All steps must be executed strictly in sequence, with each step's output feeding directly into the next.",
+          "dependency_analysis": "The chain starts with get_user_history (rec-mcp-foursquare-server) to obtain the user's most recent venue and its address. This address is passed to google_geo (googlemap-mcp-server) to get latitude/longitude. For each candidate venue, their coordinates (from seed data or search_pois enrichment) are used with google_distance (googlemap-mcp-server) to compute driving distance from the user's last visited location. The output distances are then used to filter venues (>5,000 meters are excluded). Next, search_pois (poi-retrieval-mcp-foursquare-server) is called for each remaining candidate, using their coordinates and category to retrieve category name and hit rate score. The hit rate score is used to rank the filtered venues. The final explanation step uses the user's history (from get_user_history), the venue's category (from search_pois), and the computed distance (from google_distance) to justify the top recommendation. Each step depends strictly on the previous step's output: the user's last venue address feeds google_geo, which produces coordinates for google_distance, whose output is used for filtering, then search_pois enriches the filtered venues, and finally ranking and explanation are performed. No step can be executed in parallel, as each requires the prior step's output.",
+          "selected_tools": [
+            "get_user_history",
+            "google_distance",
+            "google_geo",
+            "search_pois",
+            "google_regeo"
+          ],
+          "chain_length": 5,
+          "fuzzy_description": "Hey, I need some help finding good venue recommendations for user 721. So here's the thing - I want to find venues similar to places they've been to recently. I think they might have visited some places in the past few weeks, but I'm not entirely sure what they're into. Maybe restaurants? Or could be shopping? I'm kind of guessing here.\n\nAnyway, I have this list of candidate venues I want to check out: 4b61f328f964a520082d2ae3, 4e5d33f4c65bbeeeb42ae25c, and 40ede000f964a5203c0a1fe3. First, could you look up where user 721 was last? I need to find their most recent venue visit and get the address for that place.\n\nOnce you have that address, I guess we need to figure out where that actually is geographically - like the coordinates or whatever. Then for each of those three candidate venues, we should calculate how far they are from wherever user 721 was last. I think distance matters here, but I'm not sure exactly what threshold makes sense. Maybe something like 5km? Or was it 5,000 meters? I think that's the number but honestly I'm not certain.\n\nAfter we figure out the distances, we should probably filter out anything that's too far away - like if it's more than some distance threshold, we probably don't care about it. Then for the ones that are close enough, I'd like to know more about what kind of venues they are and maybe some popularity or rating info if that's available.\n\nFinally, could you rank the remaining options and explain why the top one would be a good match for user 721 based on their history? I want to understand the reasoning behind the recommendation. Oh, and I might have mentioned some of these steps out of order or maybe repeated something - just go with the logical flow, I guess.",
+          "ambiguity_level": "high",
+          "ambiguity_types": [
+            "PREFERENCE_UNCERTAINTY",
+            "IMPLICIT_CONSTRAINTS",
+            "VAGUE_QUANTIFIERS"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 8,
+            "solvability_feedback": "The task is fully solvable. Despite the user's uncertainty about the exact distance threshold ('5km? Or 5,000 meters?'), these are equivalent values, so no critical parameter is missing. The agent can reasonably infer the intent to filter based on distance and proceed with the workflow using the available tools.",
+            "utility_feedback": "The scenario reflects a realistic user need: finding nearby venues similar to past preferences. The ambiguity regarding the user's specific interests ('Maybe restaurants? Or shopping?') and the exact distance threshold feels natural, mimicking how a real user might express a vague request while expecting the system to handle the logic.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) `get_user_history` is required to get the last venue/address. 2) `google_geo` requires that specific address to return coordinates. 3) `google_distance` requires those coordinates as the origin point for each candidate. 4) `search_pois` (or similar enrichment) relies on knowing which candidates passed the distance filter (output of step 3) to avoid unnecessary calls or to rank correctly. 5) Final ranking depends on the scores and distances retrieved in previous steps. No tool can run independently without breaking the data flow.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "721",
+          "target_item": {
+            "venue_id": "4b61f328f964a520082d2ae3"
+          },
+          "candidate_item_ids": [
+            "4b61f328f964a520082d2ae3",
+            "4e5d33f4c65bbeeeb42ae25c",
+            "40ede000f964a5203c0a1fe3"
+          ]
+        },
+        {
+          "task_id": 24,
+          "task_description": "For user 22, generate a personalized top-2 recommendation list from the candidate venues [4c9bd94bd3c2b60c2879b2bc, 4dfcf60ac65b31579b3036d1, 4f47c6c6e4b07d0ddce8bd32] by strictly following this serial workflow: (1) Retrieve the user's interaction history using get_user_history(user_id='22'). (2) Identify the most frequently visited venue category by this user from the returned history. (3) Use filter_pois(category=<most frequent category>, min_checkins=50) to retrieve all venues in that category with at least 50 check-ins. (4) For each candidate venue, call get_poi_details(venue_id) to obtain its category and check-in count. (5) Only keep candidate venues whose category matches the user's most frequent category AND whose check-in count is at least 50. (6) Rank the remaining candidates by their check-in count (descending). (7) Output the top 2 venues as recommendations, and provide a justification for each: explain how the venue matches the user's preferences and meets the popularity threshold.",
+          "dependency_analysis": "The chain starts with get_user_history(user_id='22') (rec-mcp-foursquare-server), whose output is analyzed to find the user's most visited venue category. This category is then used as the 'category' parameter for filter_pois (poi-retrieval-mcp-foursquare-server), with min_checkins=50, to define the set of popular venues in the user's preferred category. Next, for each candidate venue, get_poi_details(venue_id) (poi-retrieval-mcp-foursquare-server) is called to obtain its category and check-in count. Only those candidates whose category matches the user's favorite and whose check-in count is at least 50 (as verified by the previous filter_pois result) are retained. The remaining candidates are ranked by check-in count. The final output includes the top 2 venues and a justification for each, referencing both the user's preferences and the venue's popularity. Each step depends on the output of the previous: the user's favorite category is required for filtering, and the filter results and details are needed to validate and rank candidates. No steps can be parallelized, as each depends on the prior output.",
+          "selected_tools": [
+            "get_poi_details",
+            "get_user_history",
+            "search_pois",
+            "filter_pois"
+          ],
+          "chain_length": 5,
+          "fuzzy_description": "I need help finding some venue recommendations for user 22. First, can you check what venues they've been to before to understand their preferences? I'm not entirely sure what they're into, but I have three specific venues in mind that might work: 4c9bd94bd3c2b60c2879b2bc, 4dfcf60ac65b31579b3036d1, and 4f47c6c6e4b07d0ddce8bd32.\n\nOnce you have their history, can you look at those three options and recommend the top 2 that match what they seem to like? I'm thinking they probably want something with decent popularity—maybe around 50 check-ins or so, though I'm not 100% sure about that threshold. For each recommendation, could you explain why it fits their taste and meets the popularity requirement?",
+          "ambiguity_level": "moderate",
+          "ambiguity_types": [
+            "PREFERENCE_UNCERTAINTY",
+            "UNDERSPECIFICATION"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 8,
+            "solvability_feedback": "The task is highly solvable. Although the user expresses uncertainty ('not 100% sure', 'maybe around 50'), the core constraints (user ID, candidate list, approximate threshold) are present. An agent can reasonably infer to treat 'maybe 50' as a hard filter of 50 based on the context of 'decent popularity'.",
+            "utility_feedback": "This reflects a very natural user scenario: a user has specific options in mind but needs an expert system to validate them against their hidden history and general quality metrics. The ambiguity regarding the exact threshold feels authentic to how humans speak.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) get_user_history must run first to identify the user's preference category. 2) This category is required to logically filter/validate the candidates (and potentially used in filter_pois if the workflow required expanding the pool, though here it validates the specific list). 3) get_poi_details must run on the candidates to retrieve the check-in counts and categories needed for the final comparison. 4) The final ranking and selection cannot occur without the outputs of both the history analysis and the venue details. No tool can run in parallel without breaking the logic flow.",
+            "ambiguity_reasonableness_feedback": "The ambiguity is appropriate for a 'Moderate' level. It successfully converts rigid parameters ('min_checkins=50') into natural language hesitation ('maybe around 50', 'not 100% sure') without losing the solvability of the task. It avoids being under-ambiguous (too robotic) or over-ambiguous (missing the candidate list or user ID)."
+          },
+          "user_id": "22",
+          "target_item": {
+            "venue_id": "4c9bd94bd3c2b60c2879b2bc"
+          },
+          "candidate_item_ids": [
+            "4c9bd94bd3c2b60c2879b2bc",
+            "4dfcf60ac65b31579b3036d1",
+            "4f47c6c6e4b07d0ddce8bd32"
+          ]
+        },
+        {
+          "task_id": 26,
+          "task_description": "For user 829, generate a ranked recommendation list of venues from the candidate set [4c72c6608efc370400db137d, 4afd96d6f964a520da2822e3, 4bdef4eb0ee3a5933b7432b0, 4f97461de4b0f2657c28bf59, 4a7d9084f964a520d2ee1fe3, 4a3919f3f964a520219f1fe3] based on proximity and category relevance to the user's current location (latitude: 40.7128, longitude: -74.0060). Follow this strictly serial workflow:\n\n1. Use google_regeo (googlemap-mcp-server) with latlng='40.7128,-74.0060' to obtain the user's address. \n2. Use search_pois (poi-retrieval-mcp-foursquare-server) with query='Restaurant', location=[40.7128, -74.0060], distance=2000, top_k=10 to recall top venues matching 'Restaurant' within 2km of the user's location. \n3. From the search_pois output, filter to only those venues whose venue_id is in the candidate set above. If none match, select the closest venue from the candidate set using their latitude/longitude. \n4. For each remaining candidate venue, use google_distance (googlemap-mcp-server) with origin='40.7128,-74.0060' and destination set to the venue's latitude,longitude to calculate the distance in meters. \n5. Rank the filtered candidate venues by ascending distance (closest first), then by hit rate score from search_pois if distances are equal. \n6. Provide a final recommendation list (top 3 venues) with a justification for each: include the venue_id, category, distance from user, and a brief explanation referencing proximity and category relevance.\n\nAll intermediate outputs must be used as inputs for the next step, and the chain must be executed strictly in order.",
+          "dependency_analysis": "The chain starts with google_regeo to get the user's address, which grounds the location for subsequent steps. search_pois uses this location to recall relevant venues by category and proximity. Its output (venue_ids, categories, lat/lng, hit rate scores) is filtered against the candidate set. If no candidates are recalled, the chain conditionally selects the closest candidate by lat/lng. For each filtered candidate, google_distance is called to compute the exact distance from the user's location, using the lat/lng from search_pois or candidate data. The final ranking uses both distance and hit rate score, and the explanation step requires all prior outputs. Each step depends on the previous: search_pois needs the location from google_regeo, filtering needs venue_ids from search_pois, google_distance needs lat/lng from search_pois/candidates, and ranking/explanation needs all prior outputs. No step can be executed in parallel; each depends on the previous output.",
+          "selected_tools": [
+            "google_regeo",
+            "search_pois",
+            "google_distance"
+          ],
+          "chain_length": 4,
+          "fuzzy_description": "I'm user 829 and I'm currently at coordinates 40.7128, -74.0060. I need help finding the best restaurant options from a specific set of venues I've been considering.\n\nFirst, can you figure out what address corresponds to my current location? Once we have that, I'd like you to search for restaurants within about 2km of where I am and pull up the top 10 results.\n\nAfter that, I need you to filter those results down to only include venues from this specific list: 4c72c6608efc370400db137d, 4afd96d6f964a520da2822e3, 4bdef4eb0ee3a5933b7432b0, 4f97461de4b0f2657c28bf59, 4a7d9084f964a520d2ee1fe3, and 4a3919f3f964a520219f1fe3. If none of those show up in the search, just pick whichever one from my list is closest to my location.\n\nOnce we know which venues we're working with, calculate how far each one is from my current spot. Then rank them by proximity—closest first—and if any are tied, use the relevance scores from the search to break the tie.\n\nFinally, give me your top 3 recommendations with a brief explanation of why each one makes sense, including the venue ID, what type of place it is, how far away it is, and why it stands out in terms of both distance and category match.",
+          "ambiguity_level": "low",
+          "ambiguity_types": [
+            "SOFT_CONTRADICTION"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 8,
+            "ambiguity_reasonableness_score": 9,
+            "solvability_feedback": "The task is highly solvable. All necessary tools are available, and the seed data (coordinates, candidate IDs) is complete. The 'soft contradiction' (vague 'about 2km' vs explicit logic) is easily resolved by the agent inferring the standard parameter from the context. The fallback logic ('if none match...') is clear enough to be implemented.",
+            "utility_feedback": "This reflects a very realistic user scenario: a user wants to check a specific shortlist of places against their current location and general search results. The need to verify addresses, filter a specific list, and then rank by precise distance is a common, high-utility workflow for travel or dining apps.",
+            "sequential_dependency_feedback": "The chain is strong but has one minor theoretical parallelism. Step 1 (Regeo) is strictly required first for address context. Step 2 (Search) depends on the location (seed) but not the output of Step 1, so it could technically run in parallel with Step 1, though the narrative enforces order. Step 3 is a logical filter dependent on Step 2's output. Step 4 (Distance) is strictly dependent on Step 3's filtered list. Step 5/6 depend on Step 4. The dependency between Search and Distance is mediated by the filtering logic, creating a genuine serial flow, but the initial Regeo call is slightly decoupled from the Search parameters which use seed coordinates.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "829",
+          "target_item": {
+            "venue_id": "4c72c6608efc370400db137d"
+          },
+          "candidate_item_ids": [
+            "4c72c6608efc370400db137d",
+            "4afd96d6f964a520da2822e3",
+            "4bdef4eb0ee3a5933b7432b0",
+            "4f97461de4b0f2657c28bf59",
+            "4a7d9084f964a520d2ee1fe3",
+            "4a3919f3f964a520219f1fe3"
+          ]
+        },
+        {
+          "task_id": 27,
+          "task_description": "For user 559, generate a personalized top-3 recommendation list of venues from the candidate set [4cb06cd5aef16dcb8883b054, 4c44eaf559d99c7452f5fbad, 4bca4c2fcc8cd13a5e78bdcf, 4d103129a3d9721e48bed3fd, 4f863e29e4b0a1e087c526c7, 4b01f2c5f964a520c64622e3] with the following workflow: (1) Retrieve the user's interaction history using get_user_history(user_id='559') to identify their most-visited venue category. (2) Use this top category as the 'category' parameter in filter_pois(category=top_category, min_checkins=50, location=null) to retrieve all venues in that category with at least 50 check-ins. (3) From the filter_pois output, select the venue with the highest checkin_counts and obtain its venue_id. (4) Use get_poi_details(venue_id=selected_venue_id) to retrieve its latitude and longitude. (5) Use search_pois(query='Restaurant', location=[latitude, longitude], distance=1000, top_k=100) to recall nearby restaurant venues. (6) From the search_pois results, filter to those whose venue_id is in the candidate set above, and rank them by hit rate score. Output the top 3 venue_ids, along with a brief explanation referencing the user's top category, the popularity of the anchor venue, and proximity to the anchor venue.",
+          "dependency_analysis": "The chain is strictly serial: (1) get_user_history provides the user's most-visited category, which is required as the 'category' input for (2) filter_pois. (2) filter_pois outputs venues in that category with sufficient check-ins; the venue with the highest checkin_counts is selected, and its venue_id is used as input for (3) get_poi_details. (3) get_poi_details provides latitude and longitude, which are required as the 'location' parameter for (4) search_pois. (4) search_pois returns venues near the anchor location; only those with venue_ids in the candidate set are retained and ranked by hit rate score. Each step depends on the concrete output of the previous step, and the chain cannot be parallelized. Decision points: selecting the top category from user history, and the most popular venue from filter_pois output.",
+          "selected_tools": [
+            "get_poi_details",
+            "search_pois",
+            "get_user_history",
+            "filter_pois"
+          ],
+          "chain_length": 5,
+          "fuzzy_description": "Hey, I need help finding some restaurant recommendations for user 559. First, could you look at their check-in history to figure out what kind of venues they visit most often? Once we know their favorite category, find the most popular venue in that category that has at least 50 check-ins — I think that will give us a good anchor point.\n\nAfter that, search for restaurants nearby, maybe within about a thousand meters or so. Then filter those results to only include venues from this specific list: 4cb06cd5aef16dcb8883b054, 4c44eaf559d99c7452f5fbad, 4bca4c2fcc8cd13a5e78bdcf, 4d103129a3d9721e48bed3fd, 4f863e29e4b0a1e087c526c7, and 4b01f2c5f964a520c64622e3. \n\nI want the top 3 recommendations from that filtered set, ranked by relevance. Can you also explain why each one was picked, touching on the user's preferred category, how popular the anchor venue is, and how close each recommendation is to it?",
+          "ambiguity_level": "moderate",
+          "ambiguity_types": [
+            "IMPLICIT_CONSTRAINTS",
+            "PREFERENCE_UNCERTAINTY"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 8,
+            "solvability_feedback": "The task is fully solvable. Despite the fuzzy description omitting specific parameter names (e.g., 'min_checkins=50', 'distance=1000'), the agent can reasonably infer these values from context ('at least 50 check-ins', 'about a thousand meters'). The core logic chain remains intact and executable with the provided tools.",
+            "utility_feedback": "This reflects a highly realistic user scenario where a user provides a goal and rough constraints but expects the system to handle the specific data retrieval logic. The combination of user history, popularity filtering, and geographic proximity creates a genuine multi-signal recommendation task.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable: 1) get_user_history is needed to determine the category; 2) That category is required for filter_pois; 3) The output of filter_pois (specifically the top venue) is required to get coordinates via get_poi_details; 4) Those coordinates are mandatory inputs for search_pois; 5) The results of search_pois must be filtered against the candidate list. No tool can execute before its predecessor provides the necessary dynamic input.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "559",
+          "target_item": {
+            "venue_id": "4cb06cd5aef16dcb8883b054"
+          },
+          "candidate_item_ids": [
+            "4cb06cd5aef16dcb8883b054",
+            "4c44eaf559d99c7452f5fbad",
+            "4bca4c2fcc8cd13a5e78bdcf",
+            "4d103129a3d9721e48bed3fd",
+            "4f863e29e4b0a1e087c526c7",
+            "4b01f2c5f964a520c64622e3"
+          ]
+        },
+        {
+          "task_id": 28,
+          "task_description": "For user 657, generate a ranked recommendation list of venues from the candidate set [50b39636e4b02d25ae80a309, 4aa44fa8f964a520554620e3, 4c03cb2f187ec9284b16b67b, 4b180371f964a52073cb23e3, 4eb1b6859adfb95b77765bf9] based on proximity to the address '1600 Amphitheatre Parkway, Mountain View, CA' and venue popularity. Follow this strictly serial workflow: (1) Use google_geo on '1600 Amphitheatre Parkway, Mountain View, CA' to obtain latitude and longitude; (2) Use search_pois with query='Office', location=<lat,lng from step 1>, distance=2000, top_k=100 to recall venues near the address and matching the category; (3) From the search_pois results, filter to only those venues whose venue_id is in the candidate set; (4) For each filtered venue, use get_poi_details to obtain checkin_counts; (5) Rank the filtered venues by checkin_counts (popularity), breaking ties by hit rate score from search_pois; (6) For the top-ranked venue, use google_regeo with its latitude and longitude to obtain its address; (7) Provide a final ranked list of venue_ids with their addresses and a justification explaining why the top venue was selected (proximity, category match, popularity).",
+          "dependency_analysis": "The chain starts with google_geo, which converts the address to latitude and longitude. This output is required for search_pois, which recalls venues matching 'Office' within 2000 meters of the location. The search_pois output includes venue_ids, hit rate scores, and coordinates. The next step filters these results to only those venue_ids in the candidate set [50b39636e4b02d25ae80a309, 4aa44fa8f964a520554620e3, 4c03cb2f187ec9284b16b67b, 4b180371f964a52073cb23e3, 4eb1b6859adfb95b77765bf9]. For each filtered venue, get_poi_details is called to obtain checkin_counts (popularity). The venues are then ranked by checkin_counts, using hit rate score as a tiebreaker. For the top-ranked venue, google_regeo is called with its latitude and longitude to obtain its address. The final output is a ranked list of venue_ids, their addresses, and a justification for the top pick. Each step depends strictly on the output of the previous step, and cannot be executed in parallel.",
+          "selected_tools": [
+            "search_pois",
+            "google_regeo",
+            "google_geo",
+            "get_poi_details"
+          ],
+          "chain_length": 5,
+          "fuzzy_description": "Hey, I need some help with a location-based recommendation for user 657. I'm trying to find the best office space options near 1600 Amphitheatre Parkway in Mountain View, CA. \n\nHere's what I'm thinking: first, let's get the coordinates for that address so we know exactly where we're searching from. Then, I'd like you to search for offices within about 2000 meters of that location—pull up around 100 options so we have a good pool to work with.\n\nOnce we have those results, I need you to filter them down to only these specific venues: 50b39636e4b02d25ae80a309, 4aa44fa8f964a520554620e3, 4c03cb2f187ec9284b16b67b, 4b180371f964a52073cb23e3, and 4eb1b6859adfb95b77765bf9. I think these might be some of the ones I'm looking for, but I'm not entirely sure which ones will actually show up in the search.\n\nAfter filtering, I'd like to rank whatever venues remain by how popular they are—probably based on check-in counts or something similar. If there are any ties, you can use the relevance score from the search to break them.\n\nFor the top-ranked result, could you also reverse geocode it to get the actual address? I want to make sure we're recommending something that's both popular and actually close to where the user needs to be.\n\nFinally, put together a ranked list with addresses and a brief explanation of why the top choice was picked. I want to make sure the recommendation makes sense from a proximity and popularity standpoint, though I'm also wondering if there might be other factors we should consider... like maybe the type of office space or amenities? But let's stick with proximity and popularity for now and see how it looks.",
+          "ambiguity_level": "moderate",
+          "ambiguity_types": [
+            "SOFT_CONTRADICTION",
+            "IMPLICIT_CONSTRAINTS"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 8,
+            "solvability_feedback": "The task is fully solvable. Despite the conversational tone and minor hedging ('I'm not entirely sure', 'probably based on'), all critical parameters (address, candidate IDs, distance, ranking logic) are present or easily inferred. The agent can clearly deduce the required steps.",
+            "utility_feedback": "This reflects a very realistic user scenario: a user with a specific shortlist who wants to validate them against location and popularity metrics. The ambiguity feels natural, mimicking how a human might speak when exploring options rather than issuing a rigid command.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) google_geo is required to get coordinates for 2) search_pois. 2) search_pois results are needed to identify which candidate IDs exist and to get their hit scores before 3) filtering. 3) The filtered list of valid venue_ids is required input for 4) get_poi_details. 4) The check-in counts from get_poi_details are required to perform the ranking in 5). 6) The specific lat/lng of the top-ranked venue (from the details or search result) is required for google_regeo. No step can be executed out of order or in parallel.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "657",
+          "target_item": {
+            "venue_id": "50b39636e4b02d25ae80a309"
+          },
+          "candidate_item_ids": [
+            "50b39636e4b02d25ae80a309",
+            "4aa44fa8f964a520554620e3",
+            "4c03cb2f187ec9284b16b67b",
+            "4b180371f964a52073cb23e3",
+            "4eb1b6859adfb95b77765bf9"
+          ]
+        },
+        {
+          "task_id": 29,
+          "task_description": "For user 658, generate a ranked recommendation of the best venue to visit next from the candidate set [50636448e4b0d41cab3d770f, 43e46531f964a520e82e1fe3, 4e4b34e3814d52398af27a92, 4b940459f964a520a96134e3], prioritizing venues with the highest checkin_counts and shortest walking distance from the user's current location (40.7128,-74.0060). The workflow is strictly serial: (1) For each candidate venue_id, call get_poi_details (poi-retrieval-mcp-foursquare-server) to obtain venue details including latitude, longitude, and checkin_counts; (2) Use the latitude and longitude from get_poi_details to call google_distance (googlemap-mcp-server), with origin set to '40.7128,-74.0060' and mode='walking', to get the walking distance to each venue; (3) Select the venue with the highest checkin_counts among those with walking distance less than 1500 meters; (4) For the selected venue, call google_regeo (googlemap-mcp-server) with its latitude and longitude to obtain the venue's address; (5) Output the recommended venue_id, its category, walking distance, checkin_counts, and address, along with a justification explaining why it was selected based on both popularity and proximity.",
+          "dependency_analysis": "The task requires a strictly serial chain across all three servers. Step 1: get_poi_details (poi-retrieval-mcp-foursquare-server) is called for each venue_id to retrieve latitude, longitude, and checkin_counts. Step 2: google_distance (googlemap-mcp-server) uses the latitude and longitude from get_poi_details as the destination, with the user's location as origin, to compute walking distance. Step 3: The agent filters venues to those with walking distance <1500 meters, then ranks by checkin_counts. Step 4: For the top venue, google_regeo (googlemap-mcp-server) is called with its latitude and longitude to get the address. Each step depends on the previous: google_distance cannot be called without coordinates from get_poi_details; google_regeo cannot be called without coordinates from get_poi_details; the ranking and filtering step depends on both checkin_counts and distance. No step can be executed in parallel, as each requires outputs from the previous step.",
+          "selected_tools": [
+            "get_poi_details",
+            "google_regeo",
+            "google_distance"
+          ],
+          "chain_length": 3,
+          "fuzzy_description": "Hey, so I'm user 658 and I'm trying to figure out where to go next in the city. I've got this list of places I'm considering - 50636448e4b0d41cab3d770f, 43e46531f964a520e82e1fe3, 4e4b34e3814d52398af27a92, and 4b940459f964a520a96134e3 - and I want to pick the best one.\n\nHere's what I'm thinking: first, could you pull up the details for each of these venues? I need to know how popular they are - like how many check-ins they have - and where exactly they're located. I'm starting from around 40.7128, -74.0060, somewhere downtown-ish.\n\nOnce I have that info, I guess I'd want to know how far each one is to walk. I'm not totally sure if I want something super close or if I'm okay with a bit of a trek... maybe something within a reasonable walking distance, like under 1500 meters or so? Or maybe a bit more? I don't know, you tell me what makes sense.\n\nThen I want to find the one that's most popular - so the highest check-in count - but also not too far to walk. I think I want to prioritize popularity but also not end up walking for 45 minutes, you know? Something in between.\n\nAfter you figure out which one looks best, could you also get me the actual address so I know where I'm going?\n\nI feel like there are probably a few ways to approach this, so whatever makes sense to you. Just help me pick the winner and explain why it's the best choice!",
+          "ambiguity_level": "high",
+          "ambiguity_types": [
+            "VAGUE_QUANTIFIERS",
+            "UNDERSPECIFICATION",
+            "PREFERENCE_UNCERTAINTY"
+          ],
+          "quality_scores": {
+            "solvability_score": 9,
+            "utility_score": 9,
+            "sequential_dependency_score": 10,
+            "ambiguity_reasonableness_score": 8,
+            "solvability_feedback": "The task is highly solvable. Although the user expresses uncertainty about the distance threshold ('maybe a bit more?'), they provide a concrete suggestion ('under 1500 meters') which serves as a reasonable default for the agent to adopt. The core intent (find most popular venue within a walking distance) is clear, and all necessary tools and seed data (venue IDs, start location) are provided.",
+            "utility_feedback": "This reflects a very realistic user scenario where a user has a list of options but needs help filtering them based on conflicting preferences (popularity vs. distance) and lacks specific geospatial data. The ambiguity regarding the exact distance cutoff feels natural, mimicking how real users negotiate constraints with an assistant.",
+            "sequential_dependency_feedback": "The dependency chain is strict and unbreakable. 1) `get_poi_details` must run first to retrieve coordinates and check-in counts for the specific IDs. 2) `google_distance` cannot run without the coordinates obtained in step 1. 3) The selection logic (filtering by distance < 1500m and sorting by check-ins) cannot occur until steps 1 and 2 are complete. 4) `google_regeo` depends entirely on the output of the selection logic (the specific winning venue's coordinates). No tools can be run in parallel or out of order.",
+            "ambiguity_reasonableness_feedback": ""
+          },
+          "user_id": "658",
+          "target_item": {
+            "venue_id": "50636448e4b0d41cab3d770f"
+          },
+          "candidate_item_ids": [
+            "50636448e4b0d41cab3d770f",
+            "43e46531f964a520e82e1fe3",
+            "4e4b34e3814d52398af27a92",
+            "4b940459f964a520a96134e3"
+          ]
+        }
+      ],
+      "servers": [
+        "googlemap-mcp-server",
+        "rec-mcp-foursquare-server"
+      ],
+      "combination_name": "Cross-Server: Retrieval+Geo+Rec",
+      "combination_type": "cross_server"
+    }
+  ]
+}

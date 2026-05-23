@@ -1,0 +1,12 @@
+[project]
+name = "rec-mcp-foursquare"
+version = "0.1.0"
+description = "Recommendation MCP Server based on SASRec"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp",
+    "torch",
+]
+
+[project.scripts]
+rec-mcp-foursquare = "server:mcp.run"

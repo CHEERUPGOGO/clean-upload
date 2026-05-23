@@ -1,0 +1,15 @@
+[project]
+name = "nlptool-mcp"
+version = "0.1.0"
+description = "MCP Server for querying items based on review sentiment, opinions, and summaries"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project.scripts]
+nlptool-mcp = "server:mcp.run"

@@ -1,0 +1,402 @@
+╔════════════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                        L2 & L3 QUERY SYNTHESIS PIPELINE ARCHITECTURE                                  ║
+╚════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│                                    DATA SOURCES                                                     │
+├──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                                      │
+│  data/yelp/processed/                                                                              │
+│  ├─ item_meta.jsonl          (metadata: name, categories, rating, etc.)                            │
+│  └─ user_sequences.jsonl     (user interactions: user_id → items_list)                            │
+│                                                                                                      │
+│  synthesis_yelp/                                                                                   │
+│  ├─ server_tool_registry.py  (Available tools from 5+ MCP servers)                                 │
+│  └─ Level*.txt / fuzzy_*.txt (LLM prompt templates)                                                │
+│                                                                                                      │
+└──────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+                        ┌─────────────────────────────────────────┐
+                        │    STAGE 1: DATA LOADING                │
+                        └──────────────┬──────────────────────────┘
+                                       │
+                        load_product_data_min()
+                        ├─ Read item_meta.jsonl (first 20K items)
+                        ├─ Read user_sequences.jsonl (first 20K seqs)
+                        └─ Build: business_id_to_meta, targets
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+                   ┌──────────────────────────────────────────────────┐
+                   │  STAGE 2A: L2 TASK GENERATION                    │
+                   │  (run_task_synthesis_L2_for_yelp_crossServer.py) │
+                   └──────────────────┬───────────────────────────────┘
+                                      │
+                    ┌─────────────────┴─────────────────┐
+                    │                                   │
+                    ▼                                   ▼
+        For each iteration:                    Validation Loop:
+        ┌──────────────────────┐
+        │ pick_tools_from_      │                ┌──────────────────┐
+        │ multiple_servers()    │                │ Attempt N times  │
+        │ • 2-5 tools          │ ───────→       │ (until max_tasks)│
+        │ • ≥2 servers         │                │                  │
+        └──────────────────────┘                │ For each attempt:│
+                                                │ ┌────────────────┴─────────────────┐
+                                                │ │ call_llm_for_query()             │
+        ┌──────────────────────┐                │ │ • LLM: glm-5.1                  │
+        │ Seed Data Assembly   │                │ │ • Temp: 0, Max: 8192 tokens    │
+        │ ├─ user_id           │                │ │ • Prompt: Level2_prompt.txt     │
+        │ ├─ target_product    │                │ │ • Model must output JSON        │
+        │ ├─ candidate_items   │                │ └────────────────┬────────────────┘
+        │ └─ selected_tools    │                │                  │
+        └──────────────────────┘                │    ┌─────────────▼──────────────┐
+                                                │    │ _safe_parse_json_object()  │
+        ┌──────────────────────┐                │    │ • Extract {...} if invalid │
+        │ Validation Gate 1    │◄───────────────│    └─────────────┬──────────────┘
+        │ ✓ Parallel structure │                │                  │
+        │   (no "step N")      │                │    ┌─────────────▼──────────────┐
+        │ ✓ ≥2 inline IDs      │                │    │ validate_parallel_        │
+        │ ✓ All tool_calls     │                │    │ structure()               │
+        │   present & concrete │                │    │ • Reject: "step 1, then" │
+        │ ✗ Forbidden param    │                │    │ • Reject: "after that"   │
+        │   refs (output,      │                │    │ • Accept: parallel logic │
+        │   previous, etc.)    │                │    └─────────────┬──────────────┘
+        └──────┬───────────────┘                │                  │
+               │                                └──────────────────┴─┐
+               │ ✓ PASS                                            │
+               │                                        ✓ PASS ────┘
+               │                                        │
+               └────────────────────┬──────────────────┘
+                                    │
+                    ACCEPTANCE RATE: ~20-30% (after filtering)
+                                    │
+                    Output: mcpbench_tasks_level2_cross_runner_format.json
+                    ├─ task_id
+                    ├─ task_description (detailed, structured)
+                    ├─ dependency_analysis
+                    ├─ selected_tools: ["tool1", "tool2", "tool3"]
+                    ├─ planned_tool_calls: [{tool, parameters}...]
+                    ├─ user_id
+                    ├─ target_item
+                    └─ candidate_item_ids: [id1, id2, ...]  (3-6 items)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+                   ┌──────────────────────────────────────────────────┐
+                   │  STAGE 2B: L3 TASK GENERATION                    │
+                   │  (run_task_synthesis_L3_for_yelp.py)             │
+                   └──────────────────┬───────────────────────────────┘
+                                      │
+                    ┌─────────────────┴─────────────────┐
+                    │                                   │
+                    ▼                                   ▼
+        For each iteration:                    Validation Loop:
+        ┌──────────────────────┐
+        │ pick_tools_from_      │                ┌──────────────────┐
+        │ multiple_servers()    │                │ Attempt N times  │
+        │ • 2-5 tools          │ ───────→       │ (until max_tasks)│
+        │ • ≥2 servers         │                │                  │
+        └──────────────────────┘                │ For each attempt:│
+                                                │ ┌────────────────┴─────────────────┐
+                                                │ │ call_llm_for_query()             │
+        ┌──────────────────────┐                │ │ • LLM: deepseek-v3.2             │
+        │ Seed Data Assembly   │                │ │ • Temp: 0, Max: 16384 tokens    │
+        │ ├─ user_id           │                │ │ • Prompt: Level3_prompt.txt     │
+        │ ├─ target_product    │                │ │ • Model must output JSON        │
+        │ ├─ candidate_items   │◄───┐           │ │ • Enforce serial chain 2-6      │
+        │ │  (10-30 items)     │    │           │ └────────────────┬────────────────┘
+        │ └─ selected_tools    │    │           │                  │
+        └──────────────────────┘    │           │    ┌─────────────▼──────────────┐
+                                    │           │    │ _safe_parse_json_object()  │
+        CHECKPOINT SYSTEM           │           │    │ • Extract {...} if invalid │
+        ┌──────────────────────┐    │           │    └─────────────┬──────────────┘
+        │ level3_checkpoint    │    │           │                  │
+        │ .jsonl (RESUMABLE)   │    │           │    ┌─────────────▼──────────────┐
+        │ • One task per line  │    │           │    │ validate_serial_structure()│
+        │ • Load on restart    │    │           │    │ • Require: ≥1 serial      │
+        │ • Skip existing      │    │           │    │   marker ("then", "after")│
+        │ • Append each new    │    │           │    │ • Chain length: 2-6       │
+        │   task immediately   │────┼───────────│    └─────────────┬──────────────┘
+        └──────────────────────┘    │           │                  │
+                                    │           │    ┌─────────────▼──────────────┐
+        ┌──────────────────────┐    │           │    │ has_forbidden_query_      │
+        │ Validation Gate L3   │◄───┤           │    │ phrase()                 │
+        │ ✓ Serial structure   │    │           │    │ • Reject biasing phrases │
+        │   (≥1 serial marker) │    │           │    └─────────────┬──────────────┘
+        │ ✓ Chain 2-6 steps    │    │           │                  │
+        │ ✓ ≥3 inline IDs      │    │           │    ┌─────────────▼──────────────┐
+        │ ✓ No forbidden       │    │           │    │ Inline ID validation      │
+        │   phrases            │    │           │    │ • Must have ≥3 candidate │
+        │ ✗ No parallel alt.   │    │           │    │   IDs in text             │
+        │   (truly sequential) │    │           │    └─────────────┬──────────────┘
+        └──────┬───────────────┘    │           │                  │
+               │                    │           └──────────────────┴─┐
+               │ ✓ PASS            │                              │
+               │                    └──────────────────────────────┘
+               │
+            Append to checkpoint ──→ (if checkpoint enabled)
+               │
+               └────────────────────┬──────────────────┘
+                                    │
+                    ACCEPTANCE RATE: ~15-25% (after filtering)
+                                    │
+                    Output: mcpbench_tasks_level3_cross_runner_format.json
+                    ├─ task_id
+                    ├─ task_description (structured with serial flow)
+                    ├─ dependency_analysis (describes chain logic)
+                    ├─ selected_tools: ["tool1", "tool2", "tool3"]
+                    ├─ chain_length: 3  ← KEY L3 FIELD (2-6)
+                    ├─ user_id
+                    ├─ target_item
+                    └─ candidate_item_ids: [id1..id30]  (10-30 items)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+                   ┌──────────────────────────────────────────────────┐
+                   │  STAGE 3: FUZZY DESCRIPTION GENERATION           │
+                   │  L2: (fuzzy_query_level2.py)                     │
+                   │  L3: (fuzzy_query_level3.py) — PRESERVES SEQ    │
+                   └──────────────────┬───────────────────────────────┘
+                                      │
+                    Input: task_description from Stage 2
+                    ├─ L2: mcpbench_tasks_level2_*_runner_format.json
+                    └─ L3: mcpbench_tasks_level3_*_runner_format.json
+                                      │
+        ┌─────────────────────────────┴─────────────────────────────┐
+        │                                                           │
+        ▼                                                           ▼
+    For each task:                                             _sample_ambiguity_
+    ┌──────────────────────┐                                   config()
+    │ _detect_tools_from_  │                                   ├─ Level: low (40%),
+    │ description()        │                                   │           moderate (40%),
+    │ • Find tool names    │                                   │           high (20%)
+    │   in task_desc       │                                   ├─ Types: random sample from
+    │ • Lookup in registry │                                   │   UNDERSPECIFICATION,
+    └──────────────────────┘                                   │   SOFT_CONTRADICTION,
+                                                               │   VAGUE_QUANTIFIERS,
+    ┌──────────────────────┐                                   │   PREFERENCE_UNCERTAINTY,
+    │ _extract_target_     │                                   │   IMPLICIT_CONSTRAINTS
+    │ terms()              │                                   ├─ Count: 1 for low,
+    │ • Get target ID      │                                   │          2 for moderate,
+    │ • Get target name    │                                   │          3 for high
+    │ • These are FORBIDDEN│                                   └─ Output: ambiguity config
+    │   (can't leak answer)│                                      string + metadata
+    └──────────────────────┘                                         │
+            │                                                         │
+            └────────────────────────┬─────────────────────┬──────────┘
+                                     │                     │
+                    ┌────────────────────────────────────────────────┐
+                    │                                                │
+                    ▼                                                ▼
+            For L2:                                    For L3:
+        _has_sequential_language()    ←REJECT        _has_sequential_language()
+        • "first", "then" → REJECT                   NOT CALLED ← PRESERVE
+        • "step 1" → REJECT                          (Sequential is REQUIRED)
+        • "after" → REJECT
+        • Must be parallel language
+                    │                                      │
+        ┌───────────┴──────────────┐      ┌───────────────┴──────────────┐
+        │                          │      │                              │
+        ▼                          ▼      ▼                              ▼
+    generate_fuzzy_query()               (same function, different logic)
+    │                                    │
+    ├─ Call LLM (minimax-m2.7)          ├─ Call LLM (minimax-m2.7)
+    │  Model: minimax-m2.7              │  Model: minimax-m2.7
+    │  Temp: 0, Max: 4096               │  Temp: 0, Max: 4096
+    │                                    │
+    ├─ Input: task_description +        ├─ Input: task_description +
+    │          ambiguity config         │          ambiguity config
+    │          + forbidden_terms        │          + forbidden_terms
+    │                                    │
+    ├─ Output: fuzzy_description        ├─ Output: fuzzy_description
+    │          (natural language)       │          (natural, sequential)
+    │                                    │
+    ├─ Validate (L2-specific):          ├─ Validate (L3-specific):
+    │  • No target leak                 │  • No target leak
+    │  • No sequential language         │  • Sequential flow inferable
+    │  • Keep candidate IDs             │  • Keep candidate IDs
+    │                                    │
+    └────────────────────────────────────┴─────────────────┬─────────────┘
+                                                           │
+                    Retry up to 3 times if validation fails
+                                                           │
+        Output: mcpbench_tasks_level{2|3}_*_with_fuzzy.json
+        ├─ All fields from Stage 2
+        ├─ NEW: fuzzy_description (natural language version)
+        ├─ NEW: ambiguity_level ("low" | "moderate" | "high")
+        └─ NEW: ambiguity_types: ["TYPE1", "TYPE2", ...]
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+                   ┌──────────────────────────────────────────────────┐
+                   │  STAGE 4: QUALITY FILTERING (LLM JUDGE)         │
+                   │  L2: (llm_judge_level2.py)                      │
+                   │  L3: (llm_judge_level3.py)                      │
+                   └──────────────────┬───────────────────────────────┘
+                                      │
+                    Input: fuzzy_description + metadata
+                    ├─ L2: mcpbench_tasks_level2_*_with_fuzzy.json
+                    └─ L3: mcpbench_tasks_level3_*_with_fuzzy.json
+                                      │
+        For each task in batch:       │
+        ┌──────────────────────────────────────┐
+        │ Build quality evaluation prompt      │
+        │ • Fuzzy description                  │
+        │ • Task requirements                  │
+        │ • Available tools                    │
+        │ • Evaluation rubric                  │
+        └──────┬───────────────────────────────┘
+               │
+               ▼
+        Call LLM (Judge Model)
+        │
+        ├─ Model: qwen3.5-397b-a17b (DIFFERENT from synthesis)
+        │  (Avoids self-judgment bias)
+        ├─ Temp: 0, Max: 1024 tokens
+        ├─ Task: Rate quality of generated task
+        │
+        ├─ Evaluate (L2):
+        │  ├─ Parallelism enforcement
+        │  ├─ Tool appropriateness
+        │  ├─ Task clarity
+        │  ├─ No implicit dependencies
+        │
+        ├─ Evaluate (L3):
+        │  ├─ Seriality enforcement
+        │  ├─ Dependency correctness
+        │  ├─ Chain length validation (2-6)
+        │  ├─ No parallel alternatives
+        │
+        └─ Output: ACCEPTED | REJECTED
+
+        (Concurrent evaluation for speed)
+
+        Output: mcpbench_tasks_level{2|3}_*_with_fuzzy_quality_filtered.json
+        └─ Contains only accepted tasks
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+                   ┌──────────────────────────────────────────────────┐
+                   │  STAGE 5: POST-PROCESSING (ADD GROUND TRUTH)    │
+                   │  (postprocess_add_target_to_filtered.py)         │
+                   └──────────────────┬───────────────────────────────┘
+                                      │
+                    Input: All quality-filtered files
+                    ├─ mcpbench_tasks_level2_*_with_fuzzy_quality_filtered.json
+                    ├─ mcpbench_tasks_level3_*_with_fuzzy_quality_filtered.json
+                    └─ data/{dataset}/processed/user_sequences.jsonl
+                                      │
+        For each task:                │
+        ┌──────────────────────────────────────────────┐
+        │ 1. Extract user_id from task_description    │
+        │    • Regex: "user_id='...'" or "For user..."│
+        │    • Multiple patterns tried                 │
+        └──────┬───────────────────────────────────────┘
+               │
+        ┌──────┴───────────────────────────────────────┐
+        │ 2. Load user_sequences.jsonl for this user  │
+        │    • user_id → last item (ground truth)      │
+        └──────┬───────────────────────────────────────┘
+               │
+        ┌──────┴───────────────────────────────────────┐
+        │ 3. Extract candidate_item_ids from text     │
+        │    • Regex: dataset-specific patterns        │
+        │    • Yelp: 22-char IDs                       │
+        │    • Amazon: B + 9 alphas (ASIN)             │
+        │    • Foursquare: 24-char hex                 │
+        └──────┬───────────────────────────────────────┘
+               │
+        ┌──────┴───────────────────────────────────────┐
+        │ 4. Validate target in candidates            │
+        │    • Assert: target_id ∈ candidate_ids      │
+        │    • If not found, skip this task            │
+        └──────┬───────────────────────────────────────┘
+               │
+        ┌──────┴───────────────────────────────────────┐
+        │ 5. Add ground truth fields                   │
+        │    ├─ target_item: {...}                     │
+        │    ├─ user_id: (extracted)                   │
+        │    └─ candidate_item_ids: [...]              │
+        └──────┬───────────────────────────────────────┘
+               │
+
+        Output: mcpbench_tasks_level{2|3}_*_with_fuzzy_quality_filtered_with_target.json
+        └─ Ready for benchmarking!
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+                   ┌──────────────────────────────────────────────────┐
+                   │  FINAL OUTPUTS (READY FOR BENCHMARKING)         │
+                   └──────────────────┬───────────────────────────────┘
+                                      │
+        ┌───────────────────────────┬─┴──────────┬────────────────────┐
+        │                           │            │                    │
+        ▼                           ▼            ▼                    ▼
+    L2 Tasks              L2 Tasks              L3 Tasks             L3 Tasks
+    (Parallel)           (Parallel)            (Serial)              (Serial)
+    Cross-Server         + Fuzzy               Cross-Server         + Fuzzy
+    Format               + Quality             Format                + Quality
+                         + Target              
+                                                                    + Target
+
+    Each task contains:
+    {
+      "task_id": int,
+      "task_description": str,        // Detailed structured description
+      "fuzzy_description": str,       // Natural language version
+      "dependency_analysis": str,
+      "selected_tools": [str],
+      "ambiguity_level": str,         // "low", "moderate", "high"
+      "ambiguity_types": [str],
+      "user_id": str,                 // Extracted from task
+      "target_item": {                // Added in post-processing
+        "business_id": str,
+        "name": str,
+        "categories": [str]
+      },
+      "candidate_item_ids": [str],    // Extracted from task
+      "planned_tool_calls": [...],    // L2 ONLY
+      "chain_length": int             // L3 ONLY (2-6)
+    }
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+                        EXECUTION FLOW (RUNNER COMMANDS)
+
+    $ bash_bash_L2.sh   ./synthesized_tasks/l2_tasks.json   gpt-4
+    $ bash_bash_L3.sh   ./synthesized_tasks/l3_tasks.json   gpt-4
+    
+    ├─ Auto-detects dataset from path
+    ├─ Switches MCP servers (commands.json)
+    ├─ Runs benchmark executor
+    ├─ Collects tool call traces
+    └─ Outputs: benchmark_results/L{2|3}_*.json
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+                            KEY STATISTICS
+
+    L2 Tasks:
+    • Parallel execution (all tools at once)
+    • Tool count: 2-5
+    • Candidate items: 3-6
+    • Inline ID requirement: ≥2
+    • Acceptance rate: ~25-30%
+
+    L3 Tasks:
+    • Sequential execution (tool chains)
+    • Tool count: 2-5 (in chain)
+    • Chain length: 2-6 steps
+    • Candidate items: 10-30
+    • Inline ID requirement: ≥3
+    • Acceptance rate: ~20-25%
+
+    Both:
+    • Ambiguity levels: Low (40%), Moderate (40%), High (20%)
+    • Ambiguity types: 5 (UNDERSPECIFICATION, SOFT_CONTRADICTION, etc.)
+    • Multiple dataset support: Amazon, Yelp, Foursquare
+
+════════════════════════════════════════════════════════════════════════════════════════════════════════

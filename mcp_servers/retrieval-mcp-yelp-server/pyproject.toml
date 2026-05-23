@@ -1,0 +1,13 @@
+[project]
+name = "retrieval-mcp-yelp"
+version = "0.1.0"
+description = "Retrieval MCP Server for Recommendation Systems"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp",
+    "numpy",
+    "sentence-transformers",
+]
+
+[project.scripts]
+retrieval-mcp-yelp = "server:mcp.run"

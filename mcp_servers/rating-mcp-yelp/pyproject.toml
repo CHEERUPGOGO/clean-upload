@@ -1,0 +1,10 @@
+[project]
+name = "rating-mcp-yelp"
+version = "0.1.0"
+description = "MCP server for product rating/review statistics"
+requires-python = ">=3.10"
+dependencies = ["fastmcp>=0.1.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

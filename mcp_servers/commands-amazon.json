@@ -1,0 +1,53 @@
+{
+
+"retrieval-mcp-server": {
+
+"cmd": "python -B new_retrieval_server.py ./data",
+
+"env": [],
+
+"cwd": "../retrieval-mcp-server"
+
+},
+
+"nlptool-mcp-server": {
+
+"cmd": "python server.py",
+
+"env": [],
+
+"cwd": "../nlptool-mcp"
+
+},
+
+"rating-mcp-server": {
+
+"cmd": "python server.py",
+
+"env": [],
+
+"cwd": "../rating-mcp"
+
+},
+
+"rec-mcp-server": {
+
+"cmd": "python server.py",
+
+"env": [],
+
+"cwd": "../rec-mcp"
+
+},
+
+"websearch-mcp-server": {
+
+"cmd": "python server.py",
+
+"env": ["7de12888a4ebf2687bf22732c6a251871d10f911b6336dc5f0e2fc2d4d67ab8a"],
+
+"cwd": "../websearch-mcp"
+
+}
+
+}

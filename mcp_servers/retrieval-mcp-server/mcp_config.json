@@ -1,0 +1,34 @@
+{
+  "mcpServers": {
+    "new-retrieval": {
+      "command": "python",
+      "args": [
+        "new_retrieval_server.py",
+        "./data"
+      ],
+      "cwd": "./mcp_servers/retrieval-mcp-server",
+      "description": "New Retrieval MCP Server with semantic search, attribute filtering, and item similarity",
+      "tools": [
+        {
+          "name": "search_items_by_semantic",
+          "description": "Semantic search using natural language queries and sentence embeddings"
+        },
+        {
+          "name": "search_items_by_attributes",
+          "description": "Attribute-based filtering (category, brand, price, rating)"
+        },
+        {
+          "name": "recall_similar_items",
+          "description": "Find similar items using embedding-based similarity"
+        },
+        {
+          "name": "get_item_details",
+          "description": "Get full item metadata by item_id (ASIN) or title"
+        }
+      ],
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}

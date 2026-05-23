@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxGraphModel dx="900" dy="1400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="600" pageHeight="1200" math="0" shadow="0">
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+
+    <!-- ===== TOP: Data Sources (圆形聚合) ===== -->
+    <mxCell id="datasource_bg" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;strokeWidth=2;opacity=50;" vertex="1" parent="1">
+      <mxGeometry x="200" y="40" width="200" height="160" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="ds_amazon" value="Amazon" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#FF9800;" vertex="1" parent="1">
+      <mxGeometry x="230" y="70" width="60" height="20" as="geometry" />
+    </mxCell>
+    <mxCell id="ds_yelp" value="Yelp" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#E91E63;" vertex="1" parent="1">
+      <mxGeometry x="310" y="80" width="50" height="20" as="geometry" />
+    </mxCell>
+    <mxCell id="ds_foursquare" value="Foursquare" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;fontColor=#9C27B0;" vertex="1" parent="1">
+      <mxGeometry x="250" y="110" width="80" height="20" as="geometry" />
+    </mxCell>
+    <mxCell id="ds_user" value="User Sequences" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="250" y="140" width="100" height="20" as="geometry" />
+    </mxCell>
+    
+    <mxCell id="ds_label" value="Rec Datasets" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontColor=#0288d1;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="250" y="165" width="100" height="20" as="geometry" />
+    </mxCell>
+
+    <!-- ===== Arrow: Data → Task Synthesis ===== -->
+    <mxCell id="arrow1" value="LLM-based Task Synthesis" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;fontColor=#333333;fontSize=10;labelBackgroundColor=none;" edge="1" parent="1" source="datasource_bg" target="tasks_icon">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== Tasks Icon (文档图标) ===== -->
+    <mxCell id="tasks_icon" value="" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;fillColor=#fff9c4;strokeColor=#f9a825;strokeWidth=2;" vertex="1" parent="1">
+      <mxGeometry x="270" y="260" width="60" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="tasks_label" value="Tasks" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="330" y="270" width="50" height="20" as="geometry" />
+    </mxCell>
+
+    <!-- ===== Level 分支说明 ===== -->
+    <mxCell id="level_box" value="L2: Parallel | L3: Sequential | L4: Hybrid" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#7b1fa2;fontSize=9;align=center;fontStyle=0;" vertex="1" parent="1">
+      <mxGeometry x="120" y="270" width="140" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- ===== Arrow: Tasks → Agent ===== -->
+    <mxCell id="arrow2" value="Query" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;fontColor=#333333;fontSize=11;fontStyle=1;labelBackgroundColor=none;" edge="1" parent="1" source="tasks_icon" target="agent_icon">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== LLM Agent Icon ===== -->
+    <mxCell id="agent_icon" value="🤖" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=40;" vertex="1" parent="1">
+      <mxGeometry x="270" y="370" width="60" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="agent_label" value="LLM Agent" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="330" y="385" width="80" height="20" as="geometry" />
+    </mxCell>
+
+    <!-- ===== MCP Servers (右侧虚线框) ===== -->
+    <mxCell id="mcp_box" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#0288d1;strokeWidth=2;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="420" y="355" width="150" height="90" as="geometry" />
+    </mxCell>
+    <mxCell id="mcp_label" value="Real-world MCP Servers" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=9;fontColor=#0288d1;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="430" y="365" width="130" height="20" as="geometry" />
+    </mxCell>
+    <mxCell id="mcp_servers" value="retrieval · nlp · rating · rec&#xa;googlemap · poi · ..." style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=8;fontColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="430" y="390" width="130" height="40" as="geometry" />
+    </mxCell>
+
+    <!-- ===== 双向箭头: Agent ↔ MCP Servers ===== -->
+    <mxCell id="arrow_mcp" value="Connect" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#0288d1;strokeWidth=1.5;dashed=1;fontColor=#0288d1;fontSize=8;startArrow=classic;endArrow=classic;labelBackgroundColor=none;" edge="1" parent="1" source="agent_icon" target="mcp_box">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== Arrow: Agent → Results ===== -->
+    <mxCell id="arrow3" value="Perform the Tasks" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;fontColor=#333333;fontSize=10;labelBackgroundColor=none;" edge="1" parent="1" source="agent_icon" target="results_icon">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== Execution Results Icon (剪贴板) ===== -->
+    <mxCell id="results_icon" value="📋" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=35;" vertex="1" parent="1">
+      <mxGeometry x="275" y="500" width="50" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="results_label" value="Execution Results&#xa;and Trajectory" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=9;fontColor=#666666;" vertex="1" parent="1">
+      <mxGeometry x="325" y="510" width="90" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- ===== Arrow: Results → Judge ===== -->
+    <mxCell id="arrow4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="results_icon" target="judge_icon">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== Judge Icon (放大镜) ===== -->
+    <mxCell id="judge_icon" value="🔍" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=35;" vertex="1" parent="1">
+      <mxGeometry x="275" y="610" width="50" height="50" as="geometry" />
+    </mxCell>
+    <mxCell id="judge_label" value="Rule-based&#xa;and LLM Judge" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=9;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="325" y="620" width="90" height="30" as="geometry" />
+    </mxCell>
+
+    <!-- ===== Arrow: Judge → Performance ===== -->
+    <mxCell id="arrow5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="judge_icon" target="perf_box">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+
+    <!-- ===== Agent Performance (最终输出) ===== -->
+    <mxCell id="perf_box" value="Agent Performance" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#388e3c;strokeWidth=2;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+      <mxGeometry x="225" y="720" width="150" height="50" as="geometry" />
+    </mxCell>
+
+    <!-- ===== Metrics 说明 ===== -->
+    <mxCell id="metrics_box" value="Metrics: Schema Compliance · Tool Selection F1 · Parameter Accuracy · Hit Rate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#81c784;fontSize=8;align=center;fontStyle=0;" vertex="1" parent="1">
+      <mxGeometry x="175" y="785" width="250" height="30" as="geometry" />
+    </mxCell>
+
+  </root>
+</mxGraphModel>

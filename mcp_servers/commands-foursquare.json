@@ -1,0 +1,33 @@
+{
+
+"googlemap-mcp-server": {
+
+"cmd": "python server.py",
+
+"env": [],
+
+"cwd": "../googlemap-mcp"
+
+},
+
+"poi-retrieval-mcp-foursquare-server": {
+
+"cmd": "python new_retrieval_foursquare_server.py",
+
+"env": [],
+
+"cwd": "../poi-retrieval-mcp-foursquare-server"
+
+},
+
+"rec-mcp-foursquare-server": {
+
+"cmd": "python server.py",
+
+"env": [],
+
+"cwd": "../rec-mcp-foursquare"
+
+}
+
+}

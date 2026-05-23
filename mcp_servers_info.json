@@ -1,0 +1,707 @@
+{
+  "summary": {
+    "collection_timestamp": "2026-05-05T21:24:38.528055",
+    "total_servers": 5,
+    "successful_connections": 5,
+    "failed_connections": 0,
+    "total_tools_discovered": 17,
+    "batch_size": 5,
+    "total_batches": 1,
+    "connection_mode": "individual",
+    "retry_statistics": {
+      "servers_needed_retry": 0,
+      "total_retry_attempts": 0
+    },
+    "servers_needed_retry": [],
+    "failed_servers": []
+  },
+  "servers": {
+    "retrieval-mcp-yelp-server": {
+      "name": "retrieval-mcp-yelp-server",
+      "icon": "",
+      "description": "",
+      "command": [
+        "python",
+        "new_retrieval_yelp_server.py"
+      ],
+      "connection_status": "success",
+      "tools": {
+        "get_business_details": {
+          "name": "get_business_details",
+          "description": "Get details of a business by business name or business_id.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "business_name": {
+                "type": "string",
+                "description": "Business name to get details for"
+              },
+              "business_id": {
+                "type": "string",
+                "description": "Business ID to get details for"
+              }
+            },
+            "required": []
+          }
+        },
+        "search_businesses": {
+          "name": "search_businesses",
+          "description": "Search businesses by keyword and optional nearby coordinates.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Fuzzy search query to match against business name, address and/or categories"
+              },
+              "categories": {
+                "type": "string",
+                "description": "Exact category filter (e.g., 'Bars', 'Italian', 'Coffee')"
+              },
+              "location": {
+                "type": "array",
+                "description": "Filter businesses near [latitude, longitude] coordinates"
+              },
+              "business_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optional candidate business_id whitelist"
+              },
+              "top_k": {
+                "type": "integer",
+                "description": "Maximum number of results to return",
+                "default": 100
+              }
+            },
+            "required": []
+          }
+        },
+        "filter_businesses": {
+          "name": "filter_businesses",
+          "description": "Filter businesses by category, optional nearby coordinates, optional open timestamp, and optional candidate IDs.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "categories": {
+                "type": "string",
+                "description": "Category filter (e.g., 'Restaurants', 'Pizza')"
+              },
+              "location": {
+                "type": "array",
+                "description": "Filter businesses near [latitude, longitude] coordinates"
+              },
+              "open_timestamp": {
+                "type": "number",
+                "description": "UTC timestamp to check if business is open at that time"
+              },
+              "business_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Optional candidate business_id whitelist"
+              },
+              "top_k": {
+                "type": "integer",
+                "description": "Maximum number of results to return",
+                "default": 100
+              }
+            },
+            "required": []
+          }
+        },
+        "recall_similar_items": {
+          "name": "recall_similar_items",
+          "description": "Collaborative filter: find businesses frequently visited together based on business name.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "query_text": {
+                "type": "string",
+                "description": "Business name to find similar businesses for"
+              },
+              "top_k": {
+                "type": "integer",
+                "description": "Maximum number of similar businesses to return",
+                "default": 100
+              }
+            },
+            "required": [
+              "query_text"
+            ]
+          }
+        }
+      },
+      "attempts": 1
+    },
+    "nlptool-mcp-yelp-server": {
+      "name": "nlptool-mcp-yelp-server",
+      "icon": "",
+      "description": "",
+      "command": [
+        "python",
+        "server.py"
+      ],
+      "connection_status": "success",
+      "tools": {
+        "query_sentiment": {
+          "name": "query_sentiment",
+          "description": "Filter businesses by review sentiment. Find businesses with a minimum positive review rate.\n\nArgs:\n    min_positive_rate: Minimum positive review rate (0-100). E.g., 80 means >80% positive.\n    business_ids: Optional list of business_ids to restrict the filter to. When provided, ONLY\n                  these businesses are evaluated and returned (as a whitelist). Use this to apply\n                  sentiment filters to a specific candidate set. If omitted, all businesses are considered.\n\nReturns:\n    JSON string with matching businesses sorted by positive rate descending.",
+          "input_schema": {
+            "properties": {
+              "min_positive_rate": {
+                "type": "number"
+              },
+              "business_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "required": [
+              "min_positive_rate"
+            ],
+            "type": "object"
+          }
+        },
+        "query_opinion": {
+          "name": "query_opinion",
+          "description": "Search review opinion aspects for the requested keywords.",
+          "input_schema": {
+            "properties": {
+              "keywords": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "keyword": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "business_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "type": "object"
+          }
+        },
+        "query_summary": {
+          "name": "query_summary",
+          "description": "Search review summary text for the requested keywords.",
+          "input_schema": {
+            "properties": {
+              "keywords": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "keyword": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "business_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              }
+            },
+            "type": "object"
+          }
+        }
+      },
+      "attempts": 1
+    },
+    "rating-mcp-yelp-server": {
+      "name": "rating-mcp-yelp-server",
+      "icon": "",
+      "description": "",
+      "command": [
+        "python",
+        "server.py"
+      ],
+      "connection_status": "success",
+      "tools": {
+        "get_top_rated": {
+          "name": "get_top_rated",
+          "description": "Get top-rated Yelp businesses, optionally restricted by category and candidate business IDs.",
+          "input_schema": {
+            "properties": {
+              "category": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "business_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "item_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "limit": {
+                "default": 20,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "get_most_reviewed": {
+          "name": "get_most_reviewed",
+          "description": "Get businesses with the largest review counts, optionally restricted by category and candidate IDs.",
+          "input_schema": {
+            "properties": {
+              "category": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "business_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "item_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "limit": {
+                "default": 20,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "filter_by_rating": {
+          "name": "filter_by_rating",
+          "description": "Filter businesses by rating range, category, and optional candidate IDs.",
+          "input_schema": {
+            "properties": {
+              "min_rating": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "max_rating": {
+                "anyOf": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "category": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "business_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "item_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "limit": {
+                "default": 20,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "filter_by_rating_count": {
+          "name": "filter_by_rating_count",
+          "description": "Filter businesses by review-count thresholds and optional candidate IDs.",
+          "input_schema": {
+            "properties": {
+              "min_count": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "max_count": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "min_reviews": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "max_reviews": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "category": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "business_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "item_ids": {
+                "anyOf": [
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null
+              },
+              "limit": {
+                "default": 20,
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "compare_ratings": {
+          "name": "compare_ratings",
+          "description": "Compare ratings of multiple businesses side by side.\n\nArgs:\n    item_ids: List of business_ids to compare.\n\nReturns:\n    JSON string with rating comparison, sorted by rating descending.",
+          "input_schema": {
+            "properties": {
+              "item_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "item_ids"
+            ],
+            "type": "object"
+          }
+        }
+      },
+      "attempts": 1
+    },
+    "rec-mcp-yelp-server": {
+      "name": "rec-mcp-yelp-server",
+      "icon": "",
+      "description": "",
+      "command": [
+        "python",
+        "server.py"
+      ],
+      "connection_status": "success",
+      "tools": {
+        "rank_items": {
+          "name": "rank_items",
+          "description": "Rank a list of candidate items for a user based on predicted relevance scores using SASRec model.\n\nArgs:\n    user_id: User identifier\n    item_ids: List of item business_ids to rank\n\nReturns:\n    JSON string with ranked items, each containing item_id, score, and rank",
+          "input_schema": {
+            "properties": {
+              "user_id": {
+                "type": "string"
+              },
+              "item_ids": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "user_id",
+              "item_ids"
+            ],
+            "type": "object"
+          }
+        },
+        "get_user_history": {
+          "name": "get_user_history",
+          "description": "Get a user's interaction history.\n\nArgs:\n    user_id: User identifier\n\nReturns:\n    JSON string with user_id, history_length, and last 20 items",
+          "input_schema": {
+            "properties": {
+              "user_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "user_id"
+            ],
+            "type": "object"
+          }
+        }
+      },
+      "attempts": 1
+    },
+    "googlemap-mcp-server": {
+      "name": "googlemap-mcp-server",
+      "icon": "",
+      "description": "",
+      "command": [
+        "python",
+        "server.py"
+      ],
+      "connection_status": "success",
+      "tools": {
+        "google_geo": {
+          "name": "google_geo",
+          "description": "Convert a street address to latitude and longitude coordinates (geocoding). Use this when the user provides an address and needs coordinates.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "address": {
+                "type": "string",
+                "description": "Street address (e.g., '4265 Reavis Barracks Rd')"
+              },
+              "city": {
+                "type": "string",
+                "description": "City name (e.g., 'St. Louis')"
+              }
+            },
+            "required": [
+              "address"
+            ]
+          }
+        },
+        "google_regeo": {
+          "name": "google_regeo",
+          "description": "Convert latitude and longitude coordinates to a street address (reverse geocoding). Use this when the user provides coordinates and needs the address.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "latlng": {
+                "type": "string",
+                "description": "Comma-separated latitude,longitude (e.g., '38.5325582,-90.3090247')"
+              }
+            },
+            "required": [
+              "latlng"
+            ]
+          }
+        },
+        "google_distance": {
+          "name": "google_distance",
+          "description": "Calculate the distance and travel time between two locations given their coordinates. Use this when the user asks 'how far' or 'how long to travel' between two points.",
+          "input_schema": {
+            "type": "object",
+            "properties": {
+              "origin": {
+                "type": "string",
+                "description": "Origin coordinates as 'latitude,longitude' (e.g., '38.5325582,-90.3090247')"
+              },
+              "destination": {
+                "type": "string",
+                "description": "Destination coordinates as 'latitude,longitude' (e.g., '27.930772,-82.4571776')"
+              },
+              "mode": {
+                "type": "string",
+                "description": "Optional travel mode from the task, such as walking or driving"
+              }
+            },
+            "required": [
+              "origin",
+              "destination"
+            ]
+          }
+        }
+      },
+      "attempts": 1
+    }
+  }
+}

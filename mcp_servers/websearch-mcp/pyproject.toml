@@ -1,0 +1,12 @@
+[project]
+name = "websearch-mcp"
+version = "0.1.0"
+description = "Web Search MCP Server using Serper API"
+requires-python = ">=3.10"
+dependencies = [
+    "fastmcp",
+    "httpx",
+]
+
+[project.scripts]
+websearch-mcp = "server:mcp.run"
