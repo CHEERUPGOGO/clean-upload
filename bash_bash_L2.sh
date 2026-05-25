@@ -10,8 +10,8 @@
 #
 # Examples:
 #   ./bash_bash_L2.sh ./synthesized_tasks/mcpbench_tasks_level2_cross_runner_format_with_fuzzy.json gpt-5
-#   ./bash_bash_L2.sh ./synthesis_yelp gpt-4.1 --rounds 5 --distraction 3
-#   ./bash_bash_L2.sh ./synthesis_foursquare Qwen2.5-7B-Instruct --dataset foursquare
+#   ./bash_bash_L2.sh ./synthesis_yelp Model-A --rounds 5 --distraction 3
+#   ./bash_bash_L2.sh ./synthesis_foursquare Model-B --dataset foursquare
 # =============================================================================
 
 set -euo pipefail

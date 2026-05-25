@@ -89,9 +89,9 @@ def compute_f1_score(str1: str, str2: str) -> float:
 
 def remove_symbols(text, symbols=None):
     if symbols is None:
-        # 默认符号列表
+        # Default symbol list
         symbols = ' !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
-    # 移除指定符号
+    # Remove specified symbols
     return ''.join(char for char in text if char not in symbols)
     
 def normalize_text(text: Any) -> str:
@@ -114,29 +114,29 @@ def normalize_text(text: Any) -> str:
 
 def normalize_location_input(location) -> list[float]:
     """
-    检测和转换各种格式的location输入为标准格�?[latitude, longitude]
+location�?[latitude, longitude]
     
-    支持的输入格式：
-    1. 字符串格�? "27.9959006736, -82.5791342843"
-    2. 列表格式: ["27.9959006736, -82.5791342843"]
-    3. 标准格式: [27.9959006736, -82.5791342843]
-    4. 字典格式: {"latitude": 27.9959006736, "longitude": -82.5791342843}
-    5. 字典格式: {"lat": 27.9959006736, "lng": -82.5791342843}
+    Supported input formats:
+1. �? "27.9959006736, -82.5791342843"
+    2. List format: ["27.9959006736, -82.5791342843"]
+    3. Standard format: [27.9959006736, -82.5791342843]
+    4. Dict format: {"latitude": 27.9959006736, "longitude": -82.5791342843}
+    5. Dict format: {"lat": 27.9959006736, "lng": -82.5791342843}
     
     Args:
-        location: 各种格式的location输入
+        location: location input in various formats
     
     Returns:
-        标准格式 [latitude, longitude]，其中latitude和longitude都是float
+        Standard format [latitude, longitude] as floats
     
     Raises:
-        ValueError: 当输入格式无法解析时
+        ValueError: when input format cannot be parsed
     """
     if location is None or location == "None":
         return None
     
     try:
-        # 情况1: 字符串格�?"lat, lng"
+# Case 1: �?"lat, lng"
         if isinstance(location, str):
             parts = location.strip().split(',')
             if len(parts) == 2:
@@ -144,27 +144,27 @@ def normalize_location_input(location) -> list[float]:
                 lng = float(parts[1].strip())
                 return [lat, lng]
         
-        # 情况2: 列表格式
+        # Case 2: List format
         elif isinstance(location, list):
             if len(location) == 0:
                 return None
             
-            # 子情�?.1: ["lat, lng"] 单个字符�?            if len(location) == 1 and isinstance(location[0], str):
+# �?.1: ["lat, lng"] �? if len(location) == 1 and isinstance(location[0], str):
                 parts = location[0].strip().split(',')
                 if len(parts) == 2:
                     lat = float(parts[0].strip())
                     lng = float(parts[1].strip())
                     return [lat, lng]
             
-            # 子情�?.2: [lat, lng] 标准格式
+# �?.2: [lat, lng] Standard format
             elif len(location) == 2:
                 lat = float(location[0])
                 lng = float(location[1])
                 return [lat, lng]
         
-        # 情况3: 字典格式
+        # Case 3: Dict format
         elif isinstance(location, dict):
-            # 尝试不同的键�?            lat_keys = ['latitude', 'lat']
+# �? lat_keys = ['latitude', 'lat']
             lng_keys = ['longitude', 'lng', 'lon']
             
             lat = None

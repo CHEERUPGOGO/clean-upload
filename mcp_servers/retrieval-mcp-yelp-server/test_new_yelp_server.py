@@ -261,8 +261,8 @@ async def test_attribute_search(server: NewRetrievalMCPServer):
     print("="*60)
     
     print("Filters: Categories=French, Location around 38.648, -90.261")
-    # utc_now = datetime.now(timezone.utc) # 使用test现在的时�?
-    utc_now = datetime(2024, 1, 4, 18, 0, tzinfo=timezone.utc)  # 2024-01-04 �?一个星期四
+# utc_now = datetime.now(timezone.utc) # test�?
+utc_now = datetime(2024, 1, 4, 18, 0, tzinfo=timezone.utc) # 2024-01-04 �?
     print("Current time:", utc_now.strftime("%Y-%m-%d %H:%M:%S"))
 
     result = await server._filter_businesses(

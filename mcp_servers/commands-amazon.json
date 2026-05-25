@@ -44,7 +44,7 @@
 
 "cmd": "python server.py",
 
-"env": ["7de12888a4ebf2687bf22732c6a251871d10f911b6336dc5f0e2fc2d4d67ab8a"],
+"env": ["SERPER_API_KEY=YOUR_SERPER_API_KEY_HERE"],
 
 "cwd": "../websearch-mcp"
 

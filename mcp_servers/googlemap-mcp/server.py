@@ -14,22 +14,22 @@ from mcp.server import NotificationOptions, Server
 from mcp.server.models import InitializationOptions
 import mcp.server.stdio
 import mcp.types as types
-# # 创建 Server 实例，名字叫 "my-custom-tools"
+# Create Server instance named "my-custom-tools"
 # app = Server("my-custom-tools")
 
-# 此处将在这里注册我们的工具（Tools）和资源（Resources�?import aiohttp
+# （Tools）（Resources�?import aiohttp
 
-# ========== 必需配置 ==========
-# 高德地图 Web 服务 API Key
-# 获取地址：https://lbs.amap.com/dev/
+# ========== Required Configuration ==========
+# Amap Web Service API Key
+# Get it at: https://lbs.amap.com/dev/
 # GOOGLE_API_KEY=''
 
-# ========== API 地址配置（可选，使用默认值） ==========
-# 地理编码
+# ========== API URL Configuration (optional, use defaults) ==========
+# Geocoding
 # GOOGLE_GEO_URL='https://maps.googleapis.com/maps/api/geocode/json?'
 # GOOGLE_REGEO_URL='https://maps.googleapis.com/maps/api/geocode/json?'
 # GOOGLE_DIRECTION_MATRIX_URL='https://maps.googleapis.com/maps/api/distancematrix/json?'
-# # 路线规划
+# # Route planning
 # AMAP_DRIVING_URL='https://restapi.amap.com/v5/direction/driving'
 # AMAP_WALKING_URL='https://restapi.amap.com/v5/direction/walking'
 # AMAP_BICYCLING_URL='https://restapi.amap.com/v5/direction/bicycling'
@@ -37,7 +37,7 @@ import mcp.types as types
 # AMAP_BUS_URL='https://restapi.amap.com/v5/direction/transit/integrated'
 # AMAP_SUBWAY_TRANSIT='https://restapi.amap.com/v5/direction/transit/integrated'
 
-# # POI 搜索
+# # POI search
 # AMAP_SEARCH_POI_URL='https://restapi.amap.com/v5/place/text'
 # AMAP_SEARCH_POI_AROUND_URL='https://restapi.amap.com/v5/place/around'
 # AMAP_SEARCH_POI_POLYGON_URL='https://restapi.amap.com/v5/place/polygon'
@@ -182,34 +182,34 @@ class GoogleMapServer:
             return latitude and longitude
         """
         # formatted_address = address.replace(' ', '+')
-        # # 构建请求 URL
+        # # Build request URL
         # url = f"{GOOGLE_GEO_URL}key={GOOGLE_API_KEY}&address={formatted_address}"
         # if city:
         #     url += f"&city={city}"
 
-        # # 错误处理与超时控制：使用 aiohttp �?asyncio.timeout
+# # Error handling and timeout control： aiohttp �?asyncio.timeout
         # try:
         #     async with aiohttp.ClientSession() as session:
-        #         # 使用 asyncio.wait_for 实现超时控制（兼容旧�?Python�?        #         async def fetch():
+# # Use asyncio.wait_for for timeout control（�?Python�? # async def fetch():
         #             async with session.get(url) as response:
-        #                 # 检�?HTTP 状态码是否成功
+# # �?HTTP
         #                 response.raise_for_status()
         #                 return await response.json()
                 
         #         data = await asyncio.wait_for(fetch(), timeout=10)
                 
-        #         # 检查高�?API 返回的业务状态码
+# # �?API
         #         if data.get('status') != '1':
         #             error_info = data.get('info', 'Unknown error')
         #             return {"error": f"Geocoding API error: {error_info}"}
 
-        #         # 解析并返回结�?        #         geocodes = data.get('geocodes', [])
+# # �? # geocodes = data.get('geocodes', [])
         #         if not geocodes:
         #             return {"error": "No results found for the given address."}
 
         #         location = geocodes[0].get('location')
         #         formatted_address = geocodes[0].get('formatted_address')
-        #         result_text = f"地址 '{formatted_address}' 的坐标是：{location}"
+        #         result_text = f"Address '{formatted_address}' coordinates: {location}"
 
         #         return {"location": location, "formatted_address": formatted_address}
 
@@ -241,32 +241,32 @@ class GoogleMapServer:
         Returns:
             return address
         """
-        # # 构建请求 URL
+        # # Build request URL
         # url = f"{GOOGLE_REGEO_URL}?key={GOOGLE_API_KEY}&latlng={latlng}"
 
-        # # 错误处理与超时控制：使用 aiohttp �?asyncio.timeout
+# # Error handling and timeout control： aiohttp �?asyncio.timeout
         # try:
         #     async with aiohttp.ClientSession() as session:
-        #         # 使用 asyncio.wait_for 实现超时控制（兼容旧�?Python�?        #         async def fetch():
+# # Use asyncio.wait_for for timeout control（�?Python�? # async def fetch():
         #             async with session.get(url) as response:
-        #                 # 检�?HTTP 状态码是否成功
+# # �?HTTP
         #                 response.raise_for_status()
         #                 return await response.json()
                 
         #         data = await asyncio.wait_for(fetch(), timeout=10)
                 
-        #         # 检查高�?API 返回的业务状态码
+# # �?API
         #         if data.get('status') != '1':
         #             error_info = data.get('info', 'Unknown error')
         #             return {"error": f"Geocoding API error: {error_info}"}
 
-        #         # 解析并返回结�?        #         geocodes = data.get('geocodes', [])
+# # �? # geocodes = data.get('geocodes', [])
         #         if not geocodes:
         #             return {"error": "No results found for the given address."}
 
         #         location = geocodes[0].get('location')
         #         formatted_address = geocodes[0].get('formatted_address')
-        #         result_text = f"地址 '{formatted_address}' 的坐标是：{location}"
+        #         result_text = f"Address '{formatted_address}' coordinates: {location}"
 
         #         return {"location": location, "formatted_address": formatted_address}
 
@@ -304,30 +304,30 @@ class GoogleMapServer:
         Returns:
             return distance and travel time(by driving) between two points
         """
-        # # 构建请求 URL
+        # # Build request URL
         # url = f"{GOOGLE_DISTANCE_MATRIX_URL}key={GOOGLE_API_KEY}&origins={origin}&destinations={destination}&mode=driving"
 
-        # # 错误处理与超时控制：使用 aiohttp �?asyncio.timeout
+# # Error handling and timeout control： aiohttp �?asyncio.timeout
         # try:
         #     async with aiohttp.ClientSession() as session:
-        #         # 使用 asyncio.wait_for 实现超时控制（兼容旧�?Python�?        #         async def fetch():
+# # Use asyncio.wait_for for timeout control（�?Python�? # async def fetch():
         #             async with session.get(url) as response:
-        #                 # 检�?HTTP 状态码是否成功
+# # �?HTTP
         #                 response.raise_for_status()
         #                 return await response.json()
                 
         #         data = await asyncio.wait_for(fetch(), timeout=10)
                 
-        #         # 检查高�?API 返回的业务状态码
+# # �?API
         #         if data.get('status') != '1':
         #             error_info = data.get('info', 'Unknown error')
         #             return {"error": f"Geocoding API error: {error_info}"}
 
-        #         # 解析并返回结�?        #         rows = data.get('rows', [])
+# # �? # rows = data.get('rows', [])
         #         if not rows:
         #             return {"error": "No results found for the given address."}
 
-        #         # 提取距离矩阵中的距离值（单位：米�?        #         distance_meters = rows[0].get('elements', [{}])[0].get('distance', {}).get('value', None)
+# # （：�? # distance_meters = rows[0].get('elements', [{}])[0].get('distance', {}).get('value', None)
         #         if distance_meters is None:
         #             return {"error": "Distance value not found in the response."}
 
@@ -348,24 +348,24 @@ class GoogleMapServer:
         origin_latitude, origin_longitude = origin.split(',')
         destination_latitude, destination_longitude = destination.split(',')
 
-        # 地球半径（米�?        R = 6371000
+# （�? R = 6371000
         
-        # 转换为弧�?        lat1_rad = math.radians(float(origin_latitude))
+# �? lat1_rad = math.radians(float(origin_latitude))
         lon1_rad = math.radians(float(origin_longitude))
         lat2_rad = math.radians(float(destination_latitude))
         lon2_rad = math.radians(float(destination_longitude))
         
-        # 计算差�?        dlat = lat2_rad - lat1_rad
+# �? dlat = lat2_rad - lat1_rad
         dlon = lon2_rad - lon1_rad
         
-        # Haversine公式
+        # Haversine formula
         a = math.sin(dlat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2) ** 2
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         
-        # 计算距离
+        # Calculate distance
         distance = R * c
         
-        # 计算时间（假设平均速度 30 km/h�?约为13.41m/s�?        travel_time_seconds = distance / 13.41
+# （ 30 km/h�?13.41m/s�? travel_time_seconds = distance / 13.41
         
         return {"distance": distance, "travel_time": travel_time_seconds}
         # this method should not be used in production, it is only for testing

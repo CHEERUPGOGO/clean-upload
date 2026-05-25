@@ -5,9 +5,9 @@ import argparse
 
 
 def _iter_json_file(path):
-    """自动检测文件类型并读取 json/jsonl/json.gz 文件"""
+    """Auto-detect file type and read json/jsonl/json.gz files"""
     try:
-        # 判断是否�?gzip 压缩文件
+# �?gzip
         if path.endswith('.gz'):
             f = gzip.open(path, "rt", encoding="utf-8", errors="ignore")
         else:
@@ -27,7 +27,7 @@ def _iter_json_file(path):
 
 
 def _initial_counts(path):
-    """统计用户和商品的交互次数"""
+    """Count user-item interactions"""
     u, i = {}, {}
     for obj in _iter_json_file(path):
         uid = obj.get("reviewerID")
@@ -39,7 +39,7 @@ def _initial_counts(path):
 
 
 def _build_user_sequences(path, valid_users, valid_items, min_rating=3.0):
-    """构建用户交互序列"""
+    """Build user interaction sequences"""
     import random
     from datetime import datetime
 
@@ -50,7 +50,7 @@ def _build_user_sequences(path, valid_users, valid_items, min_rating=3.0):
     for obj in _iter_json_file(path):
         uid = obj.get("user_id")
         bid = obj.get("business_id")
-        # 解析时间字符串为datetime对象，并转换为Unix时间戳（浮点数，包含小数部分�?        ts = datetime.strptime(obj.get("date"), "%Y-%m-%d %H:%M:%S").timestamp()
+# datetime，Unix（，�? ts = datetime.strptime(obj.get("date"), "%Y-%m-%d %H:%M:%S").timestamp()
         rating = obj.get("stars")
         
         if not (uid and bid and ts):
@@ -66,7 +66,7 @@ def _build_user_sequences(path, valid_users, valid_items, min_rating=3.0):
         seqs[uid].append((int(ts), bid, float(rating) if rating else None))
         used_items.add(bid)
     
-    # 按时间排�?    for uid in seqs:
+# �? for uid in seqs:
         seqs[uid].sort(key=lambda x: x[0])
     
     print(f"Filtered {filtered_count} interactions with rating < {min_rating}")
@@ -75,7 +75,7 @@ def _build_user_sequences(path, valid_users, valid_items, min_rating=3.0):
     return seqs, used_items
 
 def _write_user_sequences(out_path, seqs, user_path):
-    """写入用户序列文件; 若user文件存在则从中补充name/review_count/average_stars,否则仅写user_id+items"""
+    """Write user sequence file; supplement name/review_count/average_stars from user file if available"""
 
     include_fields = {"name", "review_count", "average_stars"}
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
@@ -125,18 +125,18 @@ def _collect_reviews_by_bid(review_path, keep_items):
         rating = obj.get("stars")
         
         if bid and bid in keep_items:
-            # 收集评论
+            # Collect reviews
             if review_text:
                 if bid not in reviews_by_bid:
                     reviews_by_bid[bid] = []
                 reviews_by_bid[bid].append([review_text])
             
-            # 收集评分用于计算平均�?            if rating is not None:
+# �? if rating is not None:
                 if bid not in ratings_by_bid:
                     ratings_by_bid[bid] = []
                 ratings_by_bid[bid].append(float(rating))
     
-    # 计算每个商品的平均评�?    avg_ratings_by_bid = {}
+# �? avg_ratings_by_bid = {}
     for bid, ratings in ratings_by_bid.items():
         avg_ratings_by_bid[bid] = round(sum(ratings) / len(ratings), 2)
     
@@ -144,7 +144,7 @@ def _collect_reviews_by_bid(review_path, keep_items):
 
 
 def _load_meta_items(meta_path):
-    """加载 meta 文件中出现的 asin/parent_asin 集合，用于过�?""
+""" meta asin/parent_asin ，�?""
     resolved = meta_path
     if not os.path.isfile(resolved):
         candidates = []
@@ -174,12 +174,12 @@ def _load_meta_items(meta_path):
     return meta_items
 
 def _write_item_meta(meta_path, out_path, keep_items, reviews_by_bid=None, avg_ratings_by_bid=None):
-    """写入商品元数�?""
+"""�?""
     if not keep_items:
         print("Warning: keep_items is empty, skip writing item metadata")
         return
 
-    # 尝试找到可用�?meta 文件路径
+# �?meta
     if not os.path.isfile(meta_path):
         candidates = []
         if meta_path.endswith(".jsonl"):
@@ -199,7 +199,7 @@ def _write_item_meta(meta_path, out_path, keep_items, reviews_by_bid=None, avg_r
             print(f"Warning: meta file not found at {meta_path}, skip writing item metadata")
             return
 
-    # 保留所有有用字段（不限制，保留完整信息�?    exclude_fields = {}  # 只排除不需要的字段,Yelp数据集business.json没有要排除的字段
+# （，�? exclude_fields = {} # ,Yelpbusiness.json
     
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     written_count = 0
@@ -209,22 +209,22 @@ def _write_item_meta(meta_path, out_path, keep_items, reviews_by_bid=None, avg_r
             bid = obj.get("business_id")
             
             if bid and bid in keep_items:
-                # 保留大部分字段，只排除明确不需要的
+                # Keep most fields, only exclude explicitly unwanted ones
                 filtered_obj = {k: v for k, v in obj.items() if k not in exclude_fields}
                 
-                # 确保 business_id 字段存在
+                # Ensure business_id field exists
                 if "business_id" not in filtered_obj:
                     filtered_obj["business_id"] = bid
                 
-                # 添加评论
+                # Add reviews
                 if reviews_by_bid and bid in reviews_by_bid:
                     filtered_obj["text"] = reviews_by_bid[bid]
                 
-                # 添加用户平均评分
+                # Add user average rating
                 if avg_ratings_by_bid and bid in avg_ratings_by_bid:
                     filtered_obj["review_rating"] = avg_ratings_by_bid[bid]
                 
-                # 删除嵌套�?attributes 字段（保留顶层字段即可）
+# �?attributes （）
                 if "attributes" in filtered_obj:
                     del filtered_obj["attributes"]
                 
@@ -235,7 +235,7 @@ def _write_item_meta(meta_path, out_path, keep_items, reviews_by_bid=None, avg_r
 
 
 def _sample_users(seqs, sample_size):
-    """随机采样用户"""
+    """Randomly sample users"""
     import random
     if len(seqs) <= sample_size:
         return seqs
@@ -255,7 +255,7 @@ def main():
     parser.add_argument("--min_rating", type=float, default=3.0, help="Minimum rating threshold")
     args = parser.parse_args()
 
-    # 设置路径
+    # Set paths
     review_path = os.path.join(args.input_dir, args.review_file)
     meta_path = os.path.join(args.input_dir, args.meta_file)
     user_path = os.path.join(args.input_dir, args.user_file)
@@ -268,10 +268,10 @@ def main():
     print(f"  User: {user_path}")
     print(f"  Output: {out_dir}")
     
-    # 单次过滤 user �?item
+# user �?item
     print("\n=== Filtering users and items ===")
     
-    # 读取Yelp Business数据集并提取其中所有business id
+    # Read Yelp Business dataset and extract all business IDs
     meta_items = _load_meta_items(meta_path)
     
     u_counts, i_counts = {}, {}

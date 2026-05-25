@@ -9,9 +9,9 @@
 # MCP servers accordingly. Supports single JSON file or directory.
 #
 # Examples:
-#   ./bash_bash_L3.sh ./synthesis_yelp/mcpbench_tasks_level3_cross_runner_format_with_fuzzy.json gpt-4.1
-#   ./bash_bash_L3.sh ./synthesis_foursquare Qwen2.5-7B-Instruct --dataset foursquare
-#   ./bash_bash_L3.sh ./synthesized_tasks gpt-5 --rounds 12
+#   ./bash_bash_L3.sh ./synthesis_yelp/mcpbench_tasks_level3_cross_runner_format_with_fuzzy.json Model-A
+#   ./bash_bash_L3.sh ./synthesis_foursquare Model-B --dataset foursquare
+#   ./bash_bash_L3.sh ./synthesized_tasks Model-C --rounds 12
 # =============================================================================
 
 set -euo pipefail

@@ -60,18 +60,18 @@ def load_item_metadata(jsonl_path: Path) -> Dict[str, Dict]:
                 # print("line=",line)
                 item = json.loads(line)
                 
-                # 尝试多个可能�?business_id 字段
+# �?business_id
                 business_id = item.get('business_id')
                 if not business_id:
                     continue
                 
-                # # 提取品牌（尝试多个字段）
+                # # Extract brand (try multiple fields)
                 # brand = item.get('name')
                 
-                # # 提取类别（尝试多个字段）
+                # # Extract category (try multiple fields)
                 # category = item.get('category')
                 
-                # 提取描述
+                # Extract description
                 description = item.get('text')
                 if isinstance(description, list):
                     description = ' '.join(str(d) for d in description if d)

@@ -60,7 +60,7 @@ def load_item_metadata(jsonl_path: Path) -> Dict[str, Dict]:
                 # print("line=",line)
                 item = json.loads(line)
                 
-                # 尝试多个可能�?business_id 字段
+# �?business_id
                 venue_id = item.get('venue_id')
                 if not venue_id:
                     venue_id = None

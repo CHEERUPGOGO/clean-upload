@@ -41,20 +41,20 @@ async def test_google_geo(server):
 
     print(f"Returns: {result}")
         
-        # # 打印搜索结果
+        # # Print search results
         # for i, item in enumerate(result.get('results', []), 1):
         #     print(f"\n[{i}] {item['title']}")
         #     print(f"    Link: {item['link']}")
         #     print(f"    Snippet: {item['snippet'][:100]}...")
         
-        # # 打印知识图谱
+        # # Print knowledge graph
         # if result.get('knowledge_graph'):
         #     kg = result['knowledge_graph']
         #     print(f"\nKnowledge Graph: {kg['title']} ({kg['type']})")
         #     if kg.get('description'):
         #         print(f"    {kg['description'][:100]}...")
         
-        # # 打印答案�?        # if result.get('answer_box'):
+# # �? # if result.get('answer_box'):
         #     ab = result['answer_box']
         #     print(f"\nAnswer Box: {ab['title']}")
         #     print(f"    {ab['answer'][:100]}...")

@@ -5,9 +5,9 @@ import argparse
 
 
 def _iter_json_file(path):
-    """自动检测文件类型并读取 json/jsonl/json.gz 文件"""
+    """Auto-detect file type and read json/jsonl/json.gz files"""
     try:
-        # 判断是否�?gzip 压缩文件
+# �?gzip
         if path.endswith('.gz'):
             f = gzip.open(path, "rt", encoding="utf-8", errors="ignore")
         else:
@@ -27,7 +27,7 @@ def _iter_json_file(path):
 
 
 def _initial_counts(path):
-    """统计用户和商品的交互次数"""
+    """Count user-item interactions"""
     u, i = {}, {}
     for obj in _iter_json_file(path):
         uid = obj.get("reviewerID")
@@ -39,7 +39,7 @@ def _initial_counts(path):
 
 
 def _build_user_sequences(path, valid_users, valid_items, min_rating=3.0):
-    """构建用户交互序列"""
+    """Build user interaction sequences"""
     import random
     
     seqs = {}
@@ -65,7 +65,7 @@ def _build_user_sequences(path, valid_users, valid_items, min_rating=3.0):
         seqs[uid].append((int(ts), asin, float(rating) if rating else None))
         used_items.add(asin)
     
-    # 按时间排�?    for uid in seqs:
+# �? for uid in seqs:
         seqs[uid].sort(key=lambda x: x[0])
     
     print(f"Filtered {filtered_count} interactions with rating < {min_rating}")
@@ -74,7 +74,7 @@ def _build_user_sequences(path, valid_users, valid_items, min_rating=3.0):
     return seqs, used_items
 
 def _write_user_sequences(out_path, seqs):
-    """写入用户序列文件"""
+    """Write user sequence file"""
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     with open(out_path, "w", encoding="utf-8") as f:
         for uid, lst in seqs.items():
@@ -95,18 +95,18 @@ def _collect_reviews_by_asin(review_path, keep_items):
         rating = obj.get("overall")
         
         if asin and asin in keep_items:
-            # 收集评论
+            # Collect reviews
             if review_text:
                 if asin not in reviews_by_asin:
                     reviews_by_asin[asin] = []
                 reviews_by_asin[asin].append([review_text])
             
-            # 收集评分用于计算平均�?            if rating is not None:
+# �? if rating is not None:
                 if asin not in ratings_by_asin:
                     ratings_by_asin[asin] = []
                 ratings_by_asin[asin].append(float(rating))
     
-    # 计算每个商品的平均评�?    avg_ratings_by_asin = {}
+# �? avg_ratings_by_asin = {}
     for asin, ratings in ratings_by_asin.items():
         avg_ratings_by_asin[asin] = round(sum(ratings) / len(ratings), 2)
     
@@ -114,7 +114,7 @@ def _collect_reviews_by_asin(review_path, keep_items):
 
 
 def _load_meta_items(meta_path):
-    """加载 meta 文件中出现的 asin/parent_asin 集合，用于过�?""
+""" meta asin/parent_asin ，�?""
     resolved = meta_path
     if not os.path.isfile(resolved):
         candidates = []
@@ -145,12 +145,12 @@ def _load_meta_items(meta_path):
 
 
 def _write_item_meta(meta_path, out_path, keep_items, reviews_by_asin=None, avg_ratings_by_asin=None):
-    """写入商品元数�?""
+"""�?""
     if not keep_items:
         print("Warning: keep_items is empty, skip writing item metadata")
         return
 
-    # 尝试找到可用�?meta 文件路径
+# �?meta
     if not os.path.isfile(meta_path):
         candidates = []
         if meta_path.endswith(".jsonl"):
@@ -170,33 +170,33 @@ def _write_item_meta(meta_path, out_path, keep_items, reviews_by_asin=None, avg_
             print(f"Warning: meta file not found at {meta_path}, skip writing item metadata")
             return
 
-    # 保留所有有用字段（不限制，保留完整信息�?    exclude_fields = {"videos", "bought_together"}  # 只排除不需要的字段
+# （，�? exclude_fields = {"videos", "bought_together"} #
     
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     written_count = 0
     
     with open(out_path, "w", encoding="utf-8") as f:
         for obj in _iter_json_file(meta_path) or []:
-            # 尝试多个可能�?asin 字段
+# �?asin
             asin = obj.get("asin") or obj.get("parent_asin")
             
             if asin and asin in keep_items:
-                # 保留大部分字段，只排除明确不需要的
+                # Keep most fields, only exclude explicitly unwanted ones
                 filtered_obj = {k: v for k, v in obj.items() if k not in exclude_fields}
                 
-                # 确保 asin 字段存在
+                # Ensure asin field exists
                 if "asin" not in filtered_obj:
                     filtered_obj["asin"] = asin
                 
-                # 添加评论
+                # Add reviews
                 if reviews_by_asin and asin in reviews_by_asin:
                     filtered_obj["reviews"] = reviews_by_asin[asin]
                 
-                # 添加用户平均评分
+                # Add user average rating
                 if avg_ratings_by_asin and asin in avg_ratings_by_asin:
                     filtered_obj["user_average_rating"] = avg_ratings_by_asin[asin]
                 
-                # 重命名一些字段以保持一致�?                if "categories" in filtered_obj and "category" not in filtered_obj:
+# �? if "categories" in filtered_obj and "category" not in filtered_obj:
                     filtered_obj["category"] = filtered_obj["categories"]
                 
                 if "store" in filtered_obj and "brand" not in filtered_obj:
@@ -209,7 +209,7 @@ def _write_item_meta(meta_path, out_path, keep_items, reviews_by_asin=None, avg_
 
 
 def _sample_users(seqs, sample_size):
-    """随机采样用户"""
+    """Randomly sample users"""
     import random
     if len(seqs) <= sample_size:
         return seqs
@@ -228,7 +228,7 @@ def main():
     parser.add_argument("--min_rating", type=float, default=3.0, help="Minimum rating threshold")
     args = parser.parse_args()
 
-    # 设置路径
+    # Set paths
     review_path = os.path.join(args.input_dir, args.review_file)
     meta_path = os.path.join(args.input_dir, args.meta_file)
     out_dir = os.path.join(args.input_dir, "processed")
@@ -239,7 +239,7 @@ def main():
     print(f"  Meta: {meta_path}")
     print(f"  Output: {out_dir}")
     
-    # 单次过滤 user �?item
+# user �?item
     print("\n=== Filtering users and items ===")
     
     meta_items = _load_meta_items(meta_path)

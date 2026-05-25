@@ -288,7 +288,7 @@ class TaskExecutor:
 
         Uses *result_raw* (the full, unsimplified server response) when
         available so that downstream serial rounds can access scores, ranks,
-        ratings, sentiment percentages, etc. â€?all without bloating the
+ratings, sentiment percentages, etc. ?all without bloating the
         planning-state prompt with full item details.
         """
         tool_name = result.get('tool', 'unknown')
@@ -739,7 +739,7 @@ Return ONLY the JSON object.
             else:
                 bus_section = "\nCANDIDATE BUS: empty (first round, no previous results yet)\n"
 
-            return f"""You are a strategic decision-making expert for a multi-tool AI agent. The task requires STRICTLY SEQUENTIAL tool execution â€?each tool's output feeds into the next tool's input.
+return f"""You are a strategic decision-making expert for a multi-tool AI agent. The task requires STRICTLY SEQUENTIAL tool execution ?each tool's output feeds into the next tool's input.
 
 TASK: "{task}"
 CURRENT ROUND: {round_num}
@@ -748,14 +748,14 @@ AVAILABLE TOOLS ACROSS SERVERS:
 {execution_summary}
 {bus_section}
 STRICT SERIAL EXECUTION RULES:
-1. Plan EXACTLY ONE tool call per round â€?NEVER more than one
+1. Plan EXACTLY ONE tool call per round ?NEVER more than one
 2. Each tool call should use information obtained from PREVIOUS rounds' results
 3. Analyze the output from the previous round before deciding the next tool
 4. Follow the task's dependency chain: each step depends on the prior step's output
 5. Do NOT call tools whose required input data is not yet available
 6. You have {config_loader.get_max_execution_rounds()} rounds in total for solving the task
 7. CRITICAL: Use EXACT concrete values from the CANDIDATE BUS above when filling tool parameters.
-   For example, if the bus shows items_ids=["B00OLNX4BE", ...], use "B00OLNX4BE" directly â€?   NEVER use placeholder strings like "<most_recent_item_id>" or "<ASIN_from_round_1>".
+For example, if the bus shows items_ids=["B00OLNX4BE", ...], use "B00OLNX4BE" directly ? NEVER use placeholder strings like "<most_recent_item_id>" or "<ASIN_from_round_1>".
 8. CANDIDATE WHITELIST FILTERING: When the task mentions a specific set of candidate ASINs/business_ids/item_ids
    and you are calling a FILTER or SEARCH tool (e.g., filter_products, filter_items_by_attributes,
    search_keyword, search_reviews, query_sentiment), you MUST pass those candidate IDs via the tool's
@@ -768,7 +768,7 @@ STRICT SERIAL EXECUTION RULES:
 DECISION AND PLANNING:
 1. Assess if the original task is fully completed based on accumulated results
 2. If not complete, identify the NEXT SINGLE tool in the dependency chain
-3. Extract required parameters from the CANDIDATE BUS â€?use the exact values listed there
+3. Extract required parameters from the CANDIDATE BUS ?use the exact values listed there
 4. Plan exactly ONE tool call for this round
 
 Return your response in this exact JSON format:
@@ -925,7 +925,7 @@ Return ONLY the JSON object.
                 elif self.serial_mode:
                     system_prompt = (
                         f"You are a strategic multi-tool AI agent planner for Round {round_num}. "
-                        f"You MUST plan EXACTLY ONE tool call per round. Tools MUST be executed STRICTLY SEQUENTIALLY â€?"
+f"You MUST plan EXACTLY ONE tool call per round. Tools MUST be executed STRICTLY SEQUENTIALLY ?"
                         f"each tool's output is needed as input for the next tool. "
                         f"NEVER plan more than one tool in a single round. "
                         f"After each round, analyze the returned result and decide which tool to call next based on the output. "
@@ -1675,7 +1675,7 @@ Return ONLY the JSON object.
     @handle_errors("estimating token count", reraise=False)
     def _estimate_token_count(self, text: str) -> int:
         """Estimate token count using character-based approximation."""
-        # Rough approximation: 1 token â‰?4 characters for most languages
+# Rough approximation: 1 token ?4 characters for most languages
         return len(text) // 4
     
     @handle_errors("checking content filter error", reraise=False)
@@ -1707,18 +1707,18 @@ Return ONLY the JSON object.
 
     @handle_errors("creating fallback LLM", reraise=False)
     async def _get_fallback_llm(self):
-        """Get qwen3-32b as fallback LLM for content filtering issues."""
+        """Get fallback LLM for content filtering issues."""
         from llm.factory import LLMFactory
         model_configs = LLMFactory.get_model_configs()
         
-        # Try to get qwen3-32b model
-        fallback_config = model_configs.get('qwen-3-32b')
+        # Try to get fallback model
+        fallback_config = model_configs.get('fallback-model')
         if not fallback_config:
-            logger.warning("qwen-3-32b fallback model not available")
+            logger.warning("Fallback model not available")
             return None
             
         fallback_llm = await LLMFactory.create_llm_provider(fallback_config)
-        logger.info("Created qwen-3-32b fallback LLM for content summarization")
+        logger.info("Created fallback LLM for content summarization")
         return fallback_llm
 
     async def _summarize_content(self, content: str, content_type: str = "result") -> str:
@@ -1742,12 +1742,12 @@ Return ONLY the JSON object.
             
             # Check if this is a content filter error
             if self._is_content_filter_error(str(e)):
-                logger.info("Content filter error detected, attempting fallback to qwen-3-32b")
+                logger.info("Content filter error detected, attempting fallback model")
                 
                 try:
                     fallback_llm = await self._get_fallback_llm()
                     if fallback_llm:
-                        logger.info("Using qwen-3-32b fallback for content summarization")
+                        logger.info("Using fallback model for content summarization")
                         summary = await fallback_llm.get_completion(
                             system_prompt, 
                             user_prompt[:config_loader.get_user_prompt_max_length()], 

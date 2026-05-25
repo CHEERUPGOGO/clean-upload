@@ -1,5 +1,4 @@
-# MCP-RecBench
-> Benchmarking Tool-Using LLM Agents with Complex Real-World Recommendation Tasks via MCP Servers
+# RecToolBench
 
 ---
 
@@ -56,13 +55,17 @@ The scripts automatically detect the dataset from the path and switch MCP server
 
 ```bash
 # L1 Benchmarking (Single-round evaluation)
-bash bash_bash_L1.sh ./synthesized_tasks_amazon_test/level1 Qwen2.5-3B-Instruct
+bash bash_bash_L1.sh ./synthesized_tasks_amazon_test/level1 Model-A
 
 # L2 Benchmarking (Parallel multi-tool, multiple rounds, with distraction)
-bash bash_bash_L2.sh ./synthesis_amazon/mcpbench_tasks_level2_cross_runner_format_with_fuzzy_quality_filtered.json Qwen2.5-3B-Instruct --rounds 5 --distraction 0
+bash bash_bash_L2.sh ./synthesis_amazon/mcpbench_tasks_level2_cross_runner_format_with_fuzzy_quality_filtered.json Model-A --rounds 5 --distraction 0
 
 # L3 Benchmarking (Serial tool chains)
-bash bash_bash_L3.sh ./synthesis_amazon/mcpbench_tasks_level3_cross_runner_format_with_fuzzy_quality_filtered.json Qwen2.5-3B-Instruct --rounds 6 --distraction 0
+bash bash_bash_L3.sh ./synthesis_amazon/mcpbench_tasks_level3_cross_runner_format_with_fuzzy_quality_filtered.json Model-A --rounds 6 --distraction 0
+
+# L4 Benchmarking (Hybrid complex tasks)
+bash run_L4_all_models.sh
+python evaluate_L4_metrics.py -i benchmark_results/L4_amazon_*.json
 ```
 
 > **Note:** The `--distraction N` flag injects irrelevant MCP servers into the tool list. Higher `N` introduces more noise.
@@ -74,8 +77,20 @@ bash bash_bash_L3.sh ./synthesis_amazon/mcpbench_tasks_level3_cross_runner_forma
 Compute the metrics based on the benchmark outputs:
 ```bash
 # Evaluate L1 metrics
-python evaluate_L1_metrics.py -i synthesized_tasks_amazon_test/level1_results_Qwen2.5-3B-Instruct/
+python evaluate_L1_metrics.py -i synthesized_tasks_amazon_test/level1_results_Model-A/
 
 # Evaluate L2 metrics
-python evaluate_L2_metrics.py -i synthesized_tasks_amazon_test/level2_results_Qwen2.5-7B-Instruct/ --detail
+python evaluate_L2_metrics.py -i synthesized_tasks_amazon_test/level2_results_Model-B/ --detail
+
+# Evaluate L3 metrics (rule-based)
+python evaluate_L3_metrics.py -i benchmark_results/L3_amazon_*.json --detail
+
+# Evaluate L3 metrics (LLM-as-judge: Grounding & Dependency Awareness)
+python evaluate_L3_metrics_llm-as-judge.py -i benchmark_results/L3_amazon_*.json
+
+# Evaluate L4 metrics (rule-based)
+python evaluate_L4_metrics.py -i benchmark_results/L4_amazon_*.json --detail
+
+# Evaluate L4 metrics (LLM-as-judge: Planning Coherence, Efficiency, Parameter, Grounding)
+python evaluate_L4_metrics_llm-as-judge.py -i benchmark_results/L4_amazon_*.json
 ```

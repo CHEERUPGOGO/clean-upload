@@ -4,22 +4,22 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Any
 
-# 输入文件路径
+# Input file path
 input_file = "./data/foursquare/dataset_TSMC2014_NYC.txt"
-# 输出文件路径
+# Output file path
 user_sequences_file = "./data/foursquare/processed/user_sequences.jsonl"
 item_meta_file = "./data/foursquare/processed/item_meta.jsonl"
-# 随机抽取的用户数�?num_users = 1000
+# �?num_users = 1000
 
-# 存储用户的checkin记录
+# Store user checkin records
 user_checkins = defaultdict(list)
-# 存储场馆的元数据
+# Store venue metadata
 venue_metadata = {}
 
-# 定义时间字符串的格式
-# %a: 星期几缩写（�?Fri�?# %b: 月份缩写（如 Apr�?# %d: 日期（如 13�?# %H: 小时�?4小时制，�?15�?# %M: 分钟（如 02�?# %S: 秒（�?32�?# %z: 时区偏移（如 +0000�?# %Y: 四位年份（如 2012�?format_str = "%a %b %d %H:%M:%S %z %Y"
+# Define time string format
+# %a: （�?Fri�?# %b: （ Apr�?# %d: （ 13�?# %H: �?4，�?15�?# %M: （ 02�?# %S: （�?32�?# %z: （ +0000�?# %Y: （ 2012�?format_str = "%a %b %d %H:%M:%S %z %Y"
 
-# 读取输入文件
+# Read input files
 print("Reading input file...")
 with open(input_file, 'r', encoding='latin-1') as f:
     for line in f:
@@ -39,7 +39,7 @@ with open(input_file, 'r', encoding='latin-1') as f:
         # timezone_offset = int(parts[6])
         utc_time = datetime.strptime(parts[7], format_str).timestamp()
         
-        # 存储用户的checkin记录
+        # Store user checkin records
         user_checkins[user_id].append({
             'venue_id': venue_id,
             'latitude': latitude,
@@ -47,7 +47,7 @@ with open(input_file, 'r', encoding='latin-1') as f:
             'utc_time': utc_time
         })
         
-        # 存储场馆的元数据（只需要存储一次）
+# Store venue metadata（）
         if venue_id not in venue_metadata:
             venue_metadata[venue_id] = {
                 'venue_id': venue_id,
@@ -60,16 +60,16 @@ with open(input_file, 'r', encoding='latin-1') as f:
 print(f"Total users found: {len(user_checkins)}")
 print(f"Total venues found: {len(venue_metadata)}")
 
-# 随机抽取1000个用�?print(f"Randomly selecting {num_users} users...")
+# 1000�?print(f"Randomly selecting {num_users} users...")
 selected_users = random.sample(list(user_checkins.keys()), min(num_users, len(user_checkins)))
 
-# 按时间顺序排序用户的checkin记录
+# Sort user checkin records by time
 print("Sorting checkin records by time...")
 for user_id in selected_users:
-    # 按utc_time排序
+    # Sort by utc_time
     user_checkins[user_id].sort(key=lambda x: x['utc_time'])
 
-# 生成user_sequences.jsonl
+# Generate user_sequences.jsonl
 print("Generating user_sequences.jsonl...")
 with open(user_sequences_file, 'w', encoding='utf-8') as f:
     for user_id in selected_users:
@@ -84,7 +84,7 @@ with open(user_sequences_file, 'w', encoding='utf-8') as f:
             print(user_data)
         f.write(json.dumps(user_data, ensure_ascii=False) + '\n')
 
-# 收集所有在选中用户中出现过的场�?print("Collecting venues from selected users...")
+# �?print("Collecting venues from selected users...")
 selected_venues = dict[str, list[Any]]()
 for user_id in selected_users:
     for checkin in user_checkins[user_id]:
@@ -96,7 +96,7 @@ for user_id in selected_users:
 
 print(f"Total venues in selected users: {len(selected_venues)}")
 
-# 生成item_meta.jsonl
+# Generate item_meta.jsonl
 print("Generating item_meta.jsonl...")
 with open(item_meta_file, 'w', encoding='utf-8') as f:
     for venue_id in selected_venues:

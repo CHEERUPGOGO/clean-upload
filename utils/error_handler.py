@@ -2,7 +2,7 @@
 """Unified Error Handling Utilities.
 
 This module provides decorators and utilities to standardize error handling
-across the project according to CLAUDE.md specifications.
+across the project.
 
 Classes:
     ErrorContext: Context manager for standardized error handling
@@ -30,7 +30,7 @@ def handle_errors(
     log_level: int = logging.ERROR,
     reraise: bool = True
 ) -> Callable:
-    """Decorator to standardize error handling according to CLAUDE.md specifications.
+    """Decorator to standardize error handling.
     
     Args:
         operation_name: Description of the operation for logging
@@ -78,7 +78,7 @@ def log_exception(
     exception: Exception,
     log_level: int = logging.ERROR
 ) -> None:
-    """Utility function to log exceptions according to CLAUDE.md standards.
+    """Utility function to log exceptions with full traceback.
     
     Args:
         operation_name: Description of the operation that failed
@@ -93,7 +93,7 @@ class ErrorContext:
     """Context manager for standardized error handling.
     
     Provides a context manager that automatically logs exceptions
-    with full traceback according to CLAUDE.md standards.
+    with full traceback.
     
     Attributes:
         operation_name: Description of the operation
@@ -198,7 +198,7 @@ async def retry_with_logging(
     """Retry an operation with proper error logging.
     
     Implements exponential backoff and logs errors according to
-    CLAUDE.md specifications.
+    project specifications.
     
     Args:
         operation: The async operation to retry

@@ -59,15 +59,15 @@ def load_item_metadata(jsonl_path: Path) -> Dict[str, Dict]:
             try:
                 item = json.loads(line)
                 
-                # 尝试多个可能�?asin 字段
+# �?asin
                 asin = item.get('asin') or item.get('parent_asin')
                 if not asin:
                     continue
                 
-                # 提取品牌（尝试多个字段）
+                # Extract brand (try multiple fields)
                 brand = item.get('brand') or item.get('store') or ''
                 
-                # 提取类别（尝试多个字段）
+                # Extract category (try multiple fields)
                 category = item.get('category')
                 if not category:
                     categories = item.get('categories')
@@ -76,12 +76,12 @@ def load_item_metadata(jsonl_path: Path) -> Dict[str, Dict]:
                     else:
                         category = item.get('main_category') or ''
                 
-                # 提取描述
+                # Extract description
                 description = item.get('description')
                 if isinstance(description, list):
                     description = ' '.join(str(d) for d in description if d)
                 
-                # 提取评分
+                # Extract rating
                 rating = item.get('rating') or item.get('average_rating')
                 if rating:
                     try:

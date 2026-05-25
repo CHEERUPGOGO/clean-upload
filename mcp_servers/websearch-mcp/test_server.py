@@ -4,7 +4,7 @@
 import asyncio
 import os
 
-# 设置 API Key (测试前需要设�?
+# API Key (�?
 # os.environ["SERPER_API_KEY"] = "your_api_key_here"
 
 from server import WebSearchMCPServer
@@ -14,7 +14,7 @@ async def test_web_search():
     """Test web search functionality"""
     server = WebSearchMCPServer()
     
-    # 测试用例
+    # Test cases
     test_queries = [
         "iPhone 15 Pro review",
     ]
@@ -32,20 +32,20 @@ async def test_web_search():
         
         print(f"Total results: {result['total_results']}")
         
-        # 打印搜索结果
+        # Print search results
         for i, item in enumerate(result.get('results', []), 1):
             print(f"\n[{i}] {item['title']}")
             print(f"    Link: {item['link']}")
             print(f"    Snippet: {item['snippet'][:100]}...")
         
-        # 打印知识图谱
+        # Print knowledge graph
         if result.get('knowledge_graph'):
             kg = result['knowledge_graph']
             print(f"\nKnowledge Graph: {kg['title']} ({kg['type']})")
             if kg.get('description'):
                 print(f"    {kg['description'][:100]}...")
         
-        # 打印答案�?        if result.get('answer_box'):
+# �? if result.get('answer_box'):
             ab = result['answer_box']
             print(f"\nAnswer Box: {ab['title']}")
             print(f"    {ab['answer'][:100]}...")

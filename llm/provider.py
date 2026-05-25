@@ -16,11 +16,9 @@ import json_repair
 
 logger = logging.getLogger(__name__)
 
-MODELS_WITH_MAX_COMPLETION_TOKENS: Set[str] = {
-    "o1-preview", "o1-mini", "o4-mini", "o3-mini", "o3", 
-    "gpt-4o", "gpt-4o-mini", "gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano",
-    "gpt-5", "gpt-5-mini"
-}
+# Models that require `max_completion_tokens` instead of `max_tokens`.
+# Populated at runtime from model config; see `_should_use_max_completion_tokens`.
+MODELS_WITH_MAX_COMPLETION_TOKENS: Set[str] = set()
 
 
 class LLMProvider:
@@ -38,7 +36,7 @@ class LLMProvider:
     Example:
         >>> from openai import AsyncAzureOpenAI
         >>> client = AsyncAzureOpenAI(...)
-        >>> provider = LLMProvider(client, "gpt-4o", "azure")
+        >>> provider = LLMProvider(client, "Model-A", "azure")
         >>> response = await provider.get_completion("You are helpful", "Hello", 100)
     """
     
@@ -62,8 +60,8 @@ class LLMProvider:
         self.provider_type: str = provider_type
         self.max_context_length: Optional[int] = max_context_length
         # Rate limit delay (seconds) between API calls for providers with strict limits
-        # Gemini free tier: 5 requests/min â†?need â‰?2s between calls; use 13s for safety
-        self._request_interval: float = 13.0 if provider_type == "gemini" else 0.0
+        # Rate limit delay for providers with strict rate limits
+        self._request_interval: float = 13.0 if provider_type == "rate-limited" else 0.0
         self._last_request_time: float = 0.0
 
     def _is_token_limit_error(self, error_message: str) -> bool:
@@ -154,7 +152,7 @@ class LLMProvider:
         
         # Limit max_tokens based on model's max_context_length if specified
         if self.max_context_length:
-            # Estimate prompt tokens (rough estimate: 1 token â‰?4 chars)
+# Estimate prompt tokens (rough estimate: 1 token ?4 chars)
             estimated_prompt_tokens = (len(system_prompt) + len(user_prompt)) // 4
             # Leave some buffer (100 tokens) for safety
             max_output_tokens = self.max_context_length - estimated_prompt_tokens - 100
@@ -188,7 +186,7 @@ class LLMProvider:
         max_attempts = 3
         for attempt in range(max_attempts):
             try:
-                # Rate limit throttle for Gemini etc.
+                # Rate limit throttle for providers with strict limits
                 if self._request_interval > 0:
                     import time as _time
                     elapsed = _time.time() - self._last_request_time
@@ -230,14 +228,14 @@ class LLMProvider:
                 
                 # For other errors, wait before retry (except last attempt)
                 if attempt < max_attempts - 1:
-                    # Parse retry delay from 429 errors (e.g., Gemini "Please retry in 22.80s")
+                    # Parse retry delay from 429 errors (e.g., "Please retry in 22.80s")
                     import re as _re
                     retry_match = _re.search(r'retry in ([\d.]+)s', error_msg)
                     if '429' in error_msg or 'rate_limit' in error_msg.lower() or 'quota' in error_msg.lower():
                         if retry_match:
                             wait_time = float(retry_match.group(1)) + 2
                         else:
-                            wait_time = 60  # conservative default for rate limits (Gemini free tier: 5 RPM)
+                            wait_time = 60  # conservative default for rate limits
                         logger.info(f"Rate limited, waiting {wait_time:.0f}s before retry...")
                     else:
                         wait_time = 2 ** attempt  # 1, 2 seconds

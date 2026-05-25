@@ -9,8 +9,8 @@
 # MCP servers accordingly. Supports single JSON file or directory.
 #
 # Examples:
-#   ./bash_bash_L1.sh ./synthesized_tasks gpt-4.1
-#   ./bash_bash_L1.sh ./synthesis_yelp/some_level1_tasks.json Qwen2.5-7B-Instruct
+#   ./bash_bash_L1.sh ./synthesized_tasks Model-A
+#   ./bash_bash_L1.sh ./synthesis_yelp/some_level1_tasks.json Model-B
 # =============================================================================
 
 set -euo pipefail

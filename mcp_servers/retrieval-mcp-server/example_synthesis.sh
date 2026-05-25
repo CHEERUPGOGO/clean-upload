@@ -37,14 +37,14 @@ python run_task_synthesis.py \
 
 # Example 3: Generate with OpenAI (if API key is set)
 if [ -n "$OPENAI_API_KEY" ]; then
-    echo -e "\n${GREEN}Example 3: Using OpenAI GPT-4${NC}\n"
+    echo -e "\n${GREEN}Example 3: Using LLM-based synthesis${NC}\n"
     
     python run_task_synthesis.py \
         --processed_dir "$DATA_DIR" \
         --max_tasks 10 \
         --scenario all \
-        --llm_model gpt-4 \
-        --output_dir ./synthesized_tasks/gpt4_based
+        --llm_model Model-A \
+        --output_dir ./synthesized_tasks/llm_based
 else
     echo -e "\n${YELLOW}Skipping Example 3: OPENAI_API_KEY not set${NC}"
 fi
